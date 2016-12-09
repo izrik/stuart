@@ -5,11 +5,6 @@ from flask_login import UserMixin, LoginManager, \
 from flask_blogging import SQLAStorage, BloggingEngine
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "secret"  # for WTF-forms and login
-app.config["BLOGGING_URL_PREFIX"] = ""
-app.config["BLOGGING_DISQUS_SITENAME"] = None
-app.config["BLOGGING_SITENAME"] = 'This is the site name!!!'
-app.config["BLOGGING_SITEURL"] = "http://localhost:1177"
 
 # extensions
 engine = create_engine('sqlite:////tmp/blog.db')
@@ -64,4 +59,9 @@ def logout():
 
 
 if __name__ == "__main__":
+    app.config["SECRET_KEY"] = "secret"  # for WTF-forms and login
+    app.config["BLOGGING_URL_PREFIX"] = ""
+    app.config["BLOGGING_DISQUS_SITENAME"] = None
+    app.config["BLOGGING_SITENAME"] = 'This is the site name!!!'
+    app.config["BLOGGING_SITEURL"] = "http://localhost:1177"
     app.run(debug=True, port=1177, use_reloader=True)
