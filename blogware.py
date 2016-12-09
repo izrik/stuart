@@ -1,5 +1,6 @@
 
 import argparse
+import random
 
 from flask import Flask, render_template_string, redirect, render_template
 from sqlalchemy import create_engine, MetaData
@@ -29,7 +30,15 @@ if __name__ == "__main__":
     parser.add_argument('--sitename', type=str, default=sitename, help='')
     parser.add_argument('--siteurl', type=str, default=siteurl, help='')
 
+    parser.add_argument('--create-secret-key', action='store_true')
+
     args = parser.parse_args()
+
+    if args.create_secret_key:
+        digits = '0123456789abcdef'
+        key = ''.join((random.choice(digits) for x in xrange(48)))
+        print(key)
+        exit(0)
 
     secret_key = args.secret_key
     port = args.port
