@@ -13,7 +13,7 @@ secret_key = 'secret'
 port = 1177
 debug = False
 db_uri = 'sqlite:////tmp/blog.db'
-url_prefix = ''
+url_prefix = ''  # e.g. '/blog'
 disqus_sitename = ''
 sitename = 'Site Name'
 siteurl = 'http://localhost:1177'
@@ -92,9 +92,10 @@ def load_user(user_id):
     return User("izrik", "izrik@izrik.com")
 
 
-# @app.route("/")
-# def index():
-#     return render_template("index.html")
+if url_prefix and url_prefix != '/':
+    @app.route("/")
+    def index():
+        return render_template("index.html", config=blog_engine.config)
 
 
 @app.route("/login/")
