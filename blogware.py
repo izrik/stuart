@@ -1,13 +1,55 @@
+
+import argparse
+
 from flask import Flask, render_template_string, redirect, render_template
 from sqlalchemy import create_engine, MetaData
 from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin
 from flask_blogging import SQLAStorage, BloggingEngine
 
+secret_key = 'secret'
+port = 1177
+debug = False
+db_uri = 'sqlite:////tmp/blog.db'
+url_prefix = ''
+disqus_sitename = ''
+sitename = 'Site Name'
+siteurl = 'http://localhost:1177'
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--secret-key', type=str, default=secret_key, help='')
+    parser.add_argument('--port', type=int, default=port, help='')
+    parser.add_argument('--debug', action='store_true', help='')
+    parser.add_argument('--db-uri', type=str, action='store', default=db_uri)
+
+    parser.add_argument('--url-prefix', type=str, default=url_prefix, help='')
+    parser.add_argument('--disqus-sitename', type=str, default=disqus_sitename,
+                        help='')
+    parser.add_argument('--sitename', type=str, default=sitename, help='')
+    parser.add_argument('--siteurl', type=str, default=siteurl, help='')
+
+    args = parser.parse_args()
+
+    secret_key = args.secret_key
+    port = args.port
+    debug = args.debug
+    db_uri = args.db_uri
+    url_prefix = args.url_prefix
+    disqus_sitename = args.disqus_sitename
+    sitename = args.sitename
+    siteurl = args.siteurl
+
 app = Flask(__name__)
 
+app.config["SECRET_KEY"] = secret_key  # for WTF-forms and login
+app.config["BLOGGING_URL_PREFIX"] = url_prefix
+app.config["BLOGGING_DISQUS_SITENAME"] = disqus_sitename
+app.config["BLOGGING_SITENAME"] = sitename
+app.config["BLOGGING_SITEURL"] = siteurl
+
 # extensions
-engine = create_engine('sqlite:////tmp/blog.db')
+engine = create_engine(db_uri)
 meta = MetaData()
 sql_storage = SQLAStorage(engine, metadata=meta)
 blog_engine = BloggingEngine(app, sql_storage)
@@ -59,9 +101,11 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.config["SECRET_KEY"] = "secret"  # for WTF-forms and login
-    app.config["BLOGGING_URL_PREFIX"] = ""
-    app.config["BLOGGING_DISQUS_SITENAME"] = None
-    app.config["BLOGGING_SITENAME"] = 'This is the site name!!!'
-    app.config["BLOGGING_SITEURL"] = "http://localhost:1177"
-    app.run(debug=True, port=1177, use_reloader=True)
+
+    print('Url prefix: {}'.format(app.config["BLOGGING_URL_PREFIX"]))
+    print('Site name: {}'.format(app.config["BLOGGING_SITENAME"]))
+    print('Site url: {}'.format(app.config["BLOGGING_SITEURL"]))
+    print('Disqus site name: {}'.format(
+        app.config["BLOGGING_DISQUS_SITENAME"]))
+
+    app.run(debug=debug, port=port, use_reloader=debug)
