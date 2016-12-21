@@ -110,14 +110,14 @@ if Config.URL_PREFIX and Config.URL_PREFIX != '/':
         return render_template("index.html", config=blog_engine.config)
 
 
-@app.route("/login/")
+@app.route("/login")
 def login():
     user = User("izrik", "izrik@izrik.com")
     login_user(user)
     return redirect("/")
 
 
-@app.route("/logout/")
+@app.route("/logout")
 def logout():
     logout_user()
     return redirect("/")
