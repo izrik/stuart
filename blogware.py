@@ -2,6 +2,7 @@
 
 import argparse
 import random
+from os import environ
 
 from flask import Flask, render_template_string, redirect, render_template
 from sqlalchemy import create_engine, MetaData
@@ -9,27 +10,36 @@ from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin
 from flask_blogging import SQLAStorage, BloggingEngine
 
-secret_key = 'secret'
-port = 1177
-debug = False
-db_uri = 'sqlite:////tmp/blog.db'
-url_prefix = ''  # e.g. '/blog'
-disqus_sitename = ''
-sitename = 'Site Name'
-siteurl = 'http://localhost:1177'
+
+class Config(object):
+    SECRET_KEY = environ.get('BLOGWARE_SECRET_KEY', 'secret')
+    PORT = environ.get('BLOGWARE_PORT', 1177)
+    DEBUG = environ.get('BLOGWARE_DEBUG', False)
+    DB_URI = environ.get('BLOGWARE_DB_URI', 'sqlite:////tmp/blog.db')
+    URL_PREFIX = environ.get('BLOGWARE_URL_PREFIX', '')  # e.g. '/blog'
+    DISQUS_SITENAME = environ.get('BLOGWARE_DISQUS_SITENAME', '')
+    SITENAME = environ.get('BLOGWARE_SITENAME', 'Site Name')
+    SITEURL = environ.get('BLOGWARE_SITEURL', 'http://localhost:1177')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--secret-key', type=str, default=secret_key, help='')
-    parser.add_argument('--port', type=int, default=port, help='')
-    parser.add_argument('--debug', action='store_true', help='')
-    parser.add_argument('--db-uri', type=str, action='store', default=db_uri)
-
-    parser.add_argument('--url-prefix', type=str, default=url_prefix, help='')
-    parser.add_argument('--disqus-sitename', type=str, default=disqus_sitename,
+    parser.add_argument('--secret-key', type=str,
+                        default=Config.SECRET_KEY, help='')
+    parser.add_argument('--port', type=int, default=Config.PORT,
                         help='')
-    parser.add_argument('--sitename', type=str, default=sitename, help='')
-    parser.add_argument('--siteurl', type=str, default=siteurl, help='')
+    parser.add_argument('--debug', action='store_true', help='',
+                        default=Config.DEBUG)
+    parser.add_argument('--db-uri', type=str, action='store',
+                        default=Config.DB_URI)
+    parser.add_argument('--url-prefix', type=str,
+                        default=Config.URL_PREFIX, help='')
+    parser.add_argument('--disqus-sitename', type=str,
+                        default=Config.DISQUS_SITENAME, help='')
+    parser.add_argument('--sitename', type=str,
+                        default=Config.SITENAME, help='')
+    parser.add_argument('--siteurl', type=str,
+                        default=Config.SITEURL, help='')
 
     parser.add_argument('--create-secret-key', action='store_true')
 
@@ -41,25 +51,27 @@ if __name__ == "__main__":
         print(key)
         exit(0)
 
-    secret_key = args.secret_key
-    port = args.port
-    debug = args.debug
-    db_uri = args.db_uri
-    url_prefix = args.url_prefix
-    disqus_sitename = args.disqus_sitename
-    sitename = args.sitename
-    siteurl = args.siteurl
+    Config.SECRET_KEY = args.secret_key
+    Config.PORT = args.port
+    Config.DEBUG = args.debug
+    Config.DB_URI = args.db_uri
+    Config.URL_PREFIX = args.url_prefix
+    Config.DISQUS_SITENAME = args.disqus_sitename
+    Config.SITENAME = args.sitename
+    Config.SITEURL = args.siteurl
+
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = secret_key  # for WTF-forms and login
-app.config["BLOGGING_URL_PREFIX"] = url_prefix
-app.config["BLOGGING_DISQUS_SITENAME"] = disqus_sitename
-app.config["BLOGGING_SITENAME"] = sitename
-app.config["BLOGGING_SITEURL"] = siteurl
+app.config["SECRET_KEY"] = Config.SECRET_KEY  # for WTF-forms and login
+app.config["BLOGGING_URL_PREFIX"] = Config.URL_PREFIX
+app.config["BLOGGING_DISQUS_SITENAME"] = Config.DISQUS_SITENAME
+app.config["BLOGGING_SITENAME"] = Config.SITENAME
+app.config["BLOGGING_SITEURL"] = Config.SITEURL
+app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
 
 # extensions
-engine = create_engine(db_uri)
+engine = create_engine(Config.DB_URI)
 meta = MetaData()
 sql_storage = SQLAStorage(engine, metadata=meta)
 blog_engine = BloggingEngine(app, sql_storage)
@@ -92,7 +104,7 @@ def load_user(user_id):
     return User("izrik", "izrik@izrik.com")
 
 
-if url_prefix and url_prefix != '/':
+if Config.URL_PREFIX and Config.URL_PREFIX != '/':
     @app.route("/")
     def index():
         return render_template("index.html", config=blog_engine.config)
@@ -119,4 +131,4 @@ if __name__ == "__main__":
     print('Disqus site name: {}'.format(
         app.config["BLOGGING_DISQUS_SITENAME"]))
 
-    app.run(debug=debug, port=port, use_reloader=debug)
+    app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
