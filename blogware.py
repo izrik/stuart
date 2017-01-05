@@ -96,6 +96,15 @@ class Post(db.Model):
         self.is_draft = is_draft
 
 
+class Option(db.Model):
+    name = db.Column(db.String(100), primary_key=True)
+    value = db.Column(db.String(100), nullable=True)
+
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User("izrik", "izrik@izrik.com")
