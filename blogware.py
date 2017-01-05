@@ -7,6 +7,7 @@ from os import environ
 from flask import Flask, render_template_string, redirect, render_template
 from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin
+from flask_sqlalchemy import SQLAlchemy
 
 
 class Config(object):
@@ -58,6 +59,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
 
 # extensions
 login_manager = LoginManager(app)
+db = SQLAlchemy(app)
 
 
 # user class for providing authentication
