@@ -81,6 +81,20 @@ class Guest(AnonymousUserMixin):
     pass
 
 
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    content = db.Column(db.Text)
+    date = db.Column(db.DateTime)
+    is_draft = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, title, content, date, is_draft=False):
+        self.title = title
+        self.content = content
+        self.date = date
+        self.is_draft = is_draft
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User("izrik", "izrik@izrik.com")
