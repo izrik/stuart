@@ -103,7 +103,8 @@ def load_user(user_id):
 
 @app.route("/")
 def index():
-    return render_template("index.html", config=Config)
+    posts = Post.query.order_by(Post.date.desc()).limit(10)
+    return render_template("index.html", config=Config, posts=posts)
 
 
 @app.route("/login")
