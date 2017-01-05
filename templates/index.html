@@ -1,18 +1,16 @@
-<!DOCTYPE html>
-<html>
-    <head><title>Website</title> </head>
-    <body>
-        {% if current_user.is_authenticated %}
-            <a href="/logout">Logout</a>
-        {% else %}
-            <a href="/login">Login</a>
-        {% endif %}
+{% extends 'base.html' %}
+{% block content %}
 
-        {% for post in posts %}
-            <div>
-                <p>{{ post.title }}</p>
-            </div>
-        {% endfor %}
+    {% if current_user.is_authenticated %}
+        <a href="/logout">Logout</a>
+    {% else %}
+        <a href="/login">Login</a>
+    {% endif %}
 
-    </body>
-</html>
+    {% for post in posts %}
+        <div>
+            <p>{{ post.title }}</p>
+        </div>
+    {% endfor %}
+
+{% endblock %}
