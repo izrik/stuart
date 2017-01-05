@@ -4,7 +4,8 @@ import argparse
 import random
 from os import environ
 
-from flask import Flask, render_template_string, redirect, render_template
+from flask import Flask, render_template_string, redirect, render_template, \
+    request, url_for, flash
 from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -119,11 +120,22 @@ def index():
     return render_template("index.html", config=Config, posts=posts)
 
 
-@app.route("/login")
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+
+    stored_password = Option.query.get('hashed_password').value
+    password = request.form['password']
+    if not bcrypt.check_password_hash(stored_password, password):
+        flash('Password is invalid', 'error')
+        return redirect(url_for('login'))
+
     user = User("izrik", "izrik@izrik.com")
     login_user(user)
-    return redirect("/")
+    flash('Logged in successfully')
+    # return redirect(request.args.get('next_url') or url_for('index'))
+    return redirect(url_for('index'))
 
 
 @app.route("/logout")
