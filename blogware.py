@@ -8,6 +8,7 @@ from flask import Flask, render_template_string, redirect, render_template
 from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 
 
 class Config(object):
@@ -36,6 +37,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
+    parser.add_argument('--hash-password', action='store')
 
     args = parser.parse_args()
 
@@ -61,6 +63,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
 # extensions
 login_manager = LoginManager(app)
 db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
 
 
 # user class for providing authentication
@@ -137,6 +140,10 @@ if __name__ == "__main__":
     if args.create_db:
         print('Setting up the database')
         db.create_all()
+        exit(0)
+
+    if args.hash_password is not None:
+        print(bcrypt.generate_password_hash(args.hash_password))
         exit(0)
 
     app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
