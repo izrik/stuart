@@ -7,5 +7,12 @@
         {% else %}
             <a href="/login">Login</a>
         {% endif %}
+
+        {% for post in posts %}
+            <div>
+                <p>{{ post.title }}</p>
+            </div>
+        {% endfor %}
+
     </body>
 </html>
