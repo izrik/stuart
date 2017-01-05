@@ -35,6 +35,7 @@ if __name__ == "__main__":
                         default=Config.SITEURL, help='')
 
     parser.add_argument('--create-secret-key', action='store_true')
+    parser.add_argument('--create-db', action='store_true')
 
     args = parser.parse_args()
 
