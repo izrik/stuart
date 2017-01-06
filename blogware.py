@@ -7,7 +7,7 @@ from os import environ
 from flask import Flask, render_template_string, redirect, render_template, \
     request, url_for, flash
 from flask_login import UserMixin, LoginManager, \
-    login_user, logout_user, AnonymousUserMixin, current_user
+    login_user, logout_user, AnonymousUserMixin, current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 
@@ -144,6 +144,26 @@ def get_post(post_id):
     post = Post.query.get(post_id)
     user = current_user
     return render_template('post.html', config=Config, post=post, user=user)
+
+
+@login_required
+@app.route('/edit/<post_id>', methods=['GET', 'POST'])
+def edit_post(post_id):
+    post = Post.query.get(post_id)
+    if request.method == 'GET':
+        return render_template('edit.html', post=post)
+
+    title = request.form['title']
+    content = request.form['content']
+    is_draft = not (not ('is_draft' in request.form and
+                         request.form['is_draft']))
+    post.title = title
+    post.content = content
+    post.is_draft = is_draft
+
+    db.session.add(post)
+    db.session.commit()
+    return redirect(url_for('get_post', post_id=post_id))
 
 
 @app.route("/logout")
