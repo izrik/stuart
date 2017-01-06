@@ -3,12 +3,14 @@
 import argparse
 import random
 from os import environ
+from datetime import datetime
 
-from flask import Flask, render_template_string, redirect, render_template
-from sqlalchemy import create_engine, MetaData
+from flask import Flask, render_template_string, redirect, render_template, \
+    request, url_for, flash
 from flask_login import UserMixin, LoginManager, \
-    login_user, logout_user, AnonymousUserMixin
-from flask_blogging import SQLAStorage, BloggingEngine
+    login_user, logout_user, AnonymousUserMixin, current_user, login_required
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 
 
 class Config(object):
@@ -16,8 +18,6 @@ class Config(object):
     PORT = environ.get('BLOGWARE_PORT', 1177)
     DEBUG = environ.get('BLOGWARE_DEBUG', False)
     DB_URI = environ.get('BLOGWARE_DB_URI', 'sqlite:////tmp/blog.db')
-    URL_PREFIX = environ.get('BLOGWARE_URL_PREFIX', '')  # e.g. '/blog'
-    DISQUS_SITENAME = environ.get('BLOGWARE_DISQUS_SITENAME', '')
     SITENAME = environ.get('BLOGWARE_SITENAME', 'Site Name')
     SITEURL = environ.get('BLOGWARE_SITEURL', 'http://localhost:1177')
 
@@ -32,16 +32,14 @@ if __name__ == "__main__":
                         default=Config.DEBUG)
     parser.add_argument('--db-uri', type=str, action='store',
                         default=Config.DB_URI)
-    parser.add_argument('--url-prefix', type=str,
-                        default=Config.URL_PREFIX, help='')
-    parser.add_argument('--disqus-sitename', type=str,
-                        default=Config.DISQUS_SITENAME, help='')
     parser.add_argument('--sitename', type=str,
                         default=Config.SITENAME, help='')
     parser.add_argument('--siteurl', type=str,
                         default=Config.SITEURL, help='')
 
     parser.add_argument('--create-secret-key', action='store_true')
+    parser.add_argument('--create-db', action='store_true')
+    parser.add_argument('--hash-password', action='store')
 
     args = parser.parse_args()
 
@@ -55,8 +53,6 @@ if __name__ == "__main__":
     Config.PORT = args.port
     Config.DEBUG = args.debug
     Config.DB_URI = args.db_uri
-    Config.URL_PREFIX = args.url_prefix
-    Config.DISQUS_SITENAME = args.disqus_sitename
     Config.SITENAME = args.sitename
     Config.SITEURL = args.siteurl
 
@@ -64,19 +60,12 @@ if __name__ == "__main__":
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = Config.SECRET_KEY  # for WTF-forms and login
-app.config["BLOGGING_URL_PREFIX"] = Config.URL_PREFIX
-app.config["BLOGGING_DISQUS_SITENAME"] = Config.DISQUS_SITENAME
-app.config["BLOGGING_SITENAME"] = Config.SITENAME
-app.config["BLOGGING_SITEURL"] = Config.SITEURL
 app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
 
 # extensions
-engine = create_engine(Config.DB_URI)
-meta = MetaData()
-sql_storage = SQLAStorage(engine, metadata=meta)
-blog_engine = BloggingEngine(app, sql_storage)
 login_manager = LoginManager(app)
-meta.create_all(bind=engine)
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
 
 
 # user class for providing authentication
@@ -98,23 +87,104 @@ class Guest(AnonymousUserMixin):
     pass
 
 
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    content = db.Column(db.Text)
+    date = db.Column(db.DateTime)
+    is_draft = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, title, content, date, is_draft=False):
+        self.title = title
+        self.content = content
+        self.date = date
+        self.is_draft = is_draft
+
+
+class Option(db.Model):
+    name = db.Column(db.String(100), primary_key=True)
+    value = db.Column(db.String(100), nullable=True)
+
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+
 @login_manager.user_loader
-@blog_engine.user_loader
 def load_user(user_id):
     return User("izrik", "izrik@izrik.com")
 
 
-if Config.URL_PREFIX and Config.URL_PREFIX != '/':
-    @app.route("/")
-    def index():
-        return render_template("index.html", config=blog_engine.config)
+@app.route("/")
+def index():
+    posts = Post.query.order_by(Post.date.desc()).limit(10)
+    return render_template("index.html", config=Config, posts=posts)
 
 
-@app.route("/login")
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+
+    stored_password = Option.query.get('hashed_password').value
+    password = request.form['password']
+    if not bcrypt.check_password_hash(stored_password, password):
+        flash('Password is invalid', 'error')
+        return redirect(url_for('login'))
+
     user = User("izrik", "izrik@izrik.com")
     login_user(user)
-    return redirect("/")
+    flash('Logged in successfully')
+    # return redirect(request.args.get('next_url') or url_for('index'))
+    return redirect(url_for('index'))
+
+
+@app.route('/post/<post_id>', methods=['GET'])
+def get_post(post_id):
+
+    post = Post.query.get(post_id)
+    user = current_user
+    return render_template('post.html', config=Config, post=post, user=user)
+
+
+@login_required
+@app.route('/edit/<post_id>', methods=['GET', 'POST'])
+def edit_post(post_id):
+    post = Post.query.get(post_id)
+    if request.method == 'GET':
+        return render_template('edit.html', post=post, config=Config,
+                               post_url=url_for('edit_post', post_id=post.id))
+
+    title = request.form['title']
+    content = request.form['content']
+    is_draft = not (not ('is_draft' in request.form and
+                         request.form['is_draft']))
+    post.title = title
+    post.content = content
+    post.is_draft = is_draft
+
+    db.session.add(post)
+    db.session.commit()
+    return redirect(url_for('get_post', post_id=post_id))
+
+
+@login_required
+@app.route('/new', methods=['GET', 'POST'])
+def create_new():
+    if request.method == 'GET':
+        post = Post('', '', datetime.now(), True)
+        return render_template('edit.html', post=post, config=Config,
+                               post_url=url_for('create_new'))
+
+    title = request.form['title']
+    content = request.form['content']
+    is_draft = not (not ('is_draft' in request.form and
+                         request.form['is_draft']))
+    post = Post(title, content, datetime.now(), is_draft)
+
+    db.session.add(post)
+    db.session.commit()
+    return redirect(url_for('get_post', post_id=post.id))
 
 
 @app.route("/logout")
@@ -125,10 +195,16 @@ def logout():
 
 if __name__ == "__main__":
 
-    print('Url prefix: {}'.format(app.config["BLOGGING_URL_PREFIX"]))
-    print('Site name: {}'.format(app.config["BLOGGING_SITENAME"]))
-    print('Site url: {}'.format(app.config["BLOGGING_SITEURL"]))
-    print('Disqus site name: {}'.format(
-        app.config["BLOGGING_DISQUS_SITENAME"]))
+    print('Site name: {}'.format(Config.SITENAME))
+    print('Site url: {}'.format(Config.SITEURL))
+
+    if args.create_db:
+        print('Setting up the database')
+        db.create_all()
+        exit(0)
+
+    if args.hash_password is not None:
+        print(bcrypt.generate_password_hash(args.hash_password))
+        exit(0)
 
     app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)

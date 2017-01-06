@@ -1,14 +1,23 @@
-<!DOCTYPE html>
-<html>
-    <head><title>Website</title> </head>
-    <body>
-        {% if current_user.is_authenticated %}
-            <a href="/logout/">Logout</a>
-        {% else %}
-            <a href="/login/">Login</a>
-        {% endif %}
-        &nbsp&nbsp<a href="{{ config.BLOGGING_URL_PREFIX }}/">Blog</a>
-        &nbsp&nbsp<a href="{{ config.BLOGGING_URL_PREFIX }}/sitemap.xml">Sitemap</a>
-        &nbsp&nbsp<a href="{{ config.BLOGGING_URL_PREFIX }}/feeds/all.atom.xml">ATOM</a>
-    </body>
-</html>
+{% extends 'base.html' %}
+{% block content %}
+
+    {% if current_user.is_authenticated %}
+        <a href="/logout">Logout</a>
+    {% else %}
+        <a href="/login">Login</a>
+    {% endif %}
+
+    {% for post in posts %}
+        <div>
+            <p><a href="{{ url_for('get_post', post_id=post.id) }}">{{ post.title }}</a></p>
+        </div>
+    {% endfor %}
+
+
+    {% if current_user.is_authenticated %}
+        <div>
+            <a href="/new">Create New</a>
+        </div>
+    {% endif %}
+
+{% endblock %}
