@@ -197,6 +197,11 @@ if __name__ == "__main__":
 
     print('Site name: {}'.format(Config.SITENAME))
     print('Site url: {}'.format(Config.SITEURL))
+    print('Port: {}'.format(Config.PORT))
+    print('Debug: {}'.format(Config.DEBUG))
+    if Config.DEBUG:
+        print('DB URI: {}'.format(Config.DB_URI))
+        print('Secret Key: {}'.format(Config.SECRET_KEY))
 
     if args.create_db:
         print('Setting up the database')
