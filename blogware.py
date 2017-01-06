@@ -152,7 +152,7 @@ def get_post(post_id):
 def edit_post(post_id):
     post = Post.query.get(post_id)
     if request.method == 'GET':
-        return render_template('edit.html', post=post,
+        return render_template('edit.html', post=post, config=Config,
                                post_url=url_for('edit_post', post_id=post.id))
 
     title = request.form['title']
@@ -173,7 +173,7 @@ def edit_post(post_id):
 def create_new():
     if request.method == 'GET':
         post = Post('', '', datetime.now(), True)
-        return render_template('edit.html', post=post,
+        return render_template('edit.html', post=post, config=Config,
                                post_url=url_for('create_new'))
 
     title = request.form['title']
