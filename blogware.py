@@ -3,6 +3,7 @@
 import argparse
 import random
 from os import environ
+from datetime import datetime
 
 from flask import Flask, render_template_string, redirect, render_template, \
     request, url_for, flash
@@ -151,7 +152,8 @@ def get_post(post_id):
 def edit_post(post_id):
     post = Post.query.get(post_id)
     if request.method == 'GET':
-        return render_template('edit.html', post=post)
+        return render_template('edit.html', post=post,
+                               post_url=url_for('edit_post', post_id=post.id))
 
     title = request.form['title']
     content = request.form['content']
@@ -164,6 +166,25 @@ def edit_post(post_id):
     db.session.add(post)
     db.session.commit()
     return redirect(url_for('get_post', post_id=post_id))
+
+
+@login_required
+@app.route('/new', methods=['GET', 'POST'])
+def create_new():
+    if request.method == 'GET':
+        post = Post('', '', datetime.now(), True)
+        return render_template('edit.html', post=post,
+                               post_url=url_for('create_new'))
+
+    title = request.form['title']
+    content = request.form['content']
+    is_draft = not (not ('is_draft' in request.form and
+                         request.form['is_draft']))
+    post = Post(title, content, datetime.now(), is_draft)
+
+    db.session.add(post)
+    db.session.commit()
+    return redirect(url_for('get_post', post_id=post.id))
 
 
 @app.route("/logout")

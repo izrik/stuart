@@ -13,4 +13,11 @@
         </div>
     {% endfor %}
 
+
+    {% if current_user.is_authenticated %}
+        <div>
+            <a href="/new">Create New</a>
+        </div>
+    {% endif %}
+
 {% endblock %}
