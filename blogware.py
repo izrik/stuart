@@ -7,7 +7,7 @@ from os import environ
 from flask import Flask, render_template_string, redirect, render_template, \
     request, url_for, flash
 from flask_login import UserMixin, LoginManager, \
-    login_user, logout_user, AnonymousUserMixin
+    login_user, logout_user, AnonymousUserMixin, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 
@@ -136,6 +136,14 @@ def login():
     flash('Logged in successfully')
     # return redirect(request.args.get('next_url') or url_for('index'))
     return redirect(url_for('index'))
+
+
+@app.route('/post/<post_id>', methods=['GET'])
+def get_post(post_id):
+
+    post = Post.query.get(post_id)
+    user = current_user
+    return render_template('post.html', config=Config, post=post, user=user)
 
 
 @app.route("/logout")

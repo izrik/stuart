@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}{{ super() }} - {{ post.title }} {% endblock %}
+{% block content %}
+
+<article>
+
+    <header class="post-title">
+        <h1>{{ post.title }}</h1>
+
+        <p class="post-date">{{ post.date }}</p>
+
+        <div class="post-info clear-fix">
+            <p>Posted
+                <span class="by-author"> by
+                    <span class="author vcard">izrik</span></span>
+            </p>
+        </div>
+    </header>
+
+    <div class="post-content clear-fix">
+
+        <div class="post-entry">
+            {{ post.content }}
+        </div>
+    </div>
+</article>
+
+
+{% endblock %}
