@@ -11,6 +11,7 @@ from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin, current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from werkzeug.exceptions import ServiceUnavailable
 
 
 class Config(object):
@@ -126,7 +127,12 @@ def login():
     if request.method == 'GET':
         return render_template('login.html')
 
-    stored_password = Option.query.get('hashed_password').value
+    nvp = Option.query.get('hashed_password')
+    if not nvp:
+        raise ServiceUnavailable('No password set')
+    stored_password = nvp.value
+    if not stored_password:
+        raise ServiceUnavailable('No password set')
     password = request.form['password']
     if not bcrypt.check_password_hash(stored_password, password):
         flash('Password is invalid', 'error')
