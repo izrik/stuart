@@ -17,5 +17,20 @@
         {% block content %}
         {% endblock content %}
     </div>
+    <div id="footer">
+        <h1><a href="/">{{ config.SITENAME }}</a></h1>
+        {% block footer %}
+            {% if current_user.is_authenticated %}
+            <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
+            {% else %}
+            <small><a href="/login">Login</a></small><br/>
+            {% endif %}
+            {% block copyright %}
+            <small>Copyright &copy; 2017 by the author.</small><br/>
+            {% endblock %}
+            <small>Powered by <a href="https://github.com/izrik/blogware">blogware</a>.</small><br/>
+            <small>Revision: <code>{ { opts.get_revision() } }</code></small>
+        {% endblock %}
+    </div>
 </body>
 </html>

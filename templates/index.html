@@ -1,14 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 
-    <div class="login-logout">
-    {% if current_user.is_authenticated %}
-        <a href="/logout">Logout</a>
-    {% else %}
-        <a href="/login">Login</a>
-    {% endif %}
-    </div>
-
     <div class="index-post-list">
     {% set index = seq().next %}
     {% set odd_even = cycle(['odd', 'even']).next %}
