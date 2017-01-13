@@ -13,7 +13,13 @@ from flask_login import UserMixin, LoginManager, \
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from werkzeug.exceptions import ServiceUnavailable
+import git
 
+try:
+    __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
+                                              always=True, abbrev=40)
+except git.InvalidGitRepositoryError:
+    __revision__ = 'unknown'
 
 class Config(object):
     SECRET_KEY = environ.get('BLOGWARE_SECRET_KEY', 'secret')
@@ -112,6 +118,23 @@ class Option(db.Model):
         self.value = value
 
 
+class Options(object):
+    @staticmethod
+    def get(key, default_value=None):
+        option = ds.Option.query.get(key)
+        if option is None:
+            return default_value
+        return option.value
+
+    @staticmethod
+    def get_title():
+        return Options.get('title', 'Tudor')
+
+    @staticmethod
+    def get_revision():
+        return __revision__
+
+
 def seq():
     i = 0
     while True:
@@ -122,6 +145,11 @@ def seq():
 @login_manager.user_loader
 def load_user(user_id):
     return User("izrik", "izrik@izrik.com")
+
+
+@app.context_processor
+def setup_options():
+    return {'Options': Options}
 
 
 @app.route("/")
@@ -210,6 +238,7 @@ def logout():
 
 if __name__ == "__main__":
 
+    print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
     print('Site url: {}'.format(Config.SITEURL))
     print('Port: {}'.format(Config.PORT))
