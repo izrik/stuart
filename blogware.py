@@ -2,6 +2,7 @@
 
 import argparse
 import random
+from itertools import cycle
 from os import environ
 from datetime import datetime
 
@@ -111,6 +112,13 @@ class Option(db.Model):
         self.value = value
 
 
+def seq():
+    i = 0
+    while True:
+        yield i
+        i += 1
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User("izrik", "izrik@izrik.com")
@@ -119,7 +127,8 @@ def load_user(user_id):
 @app.route("/")
 def index():
     posts = Post.query.order_by(Post.date.desc()).limit(10)
-    return render_template("index.html", config=Config, posts=posts)
+    return render_template("index.html", config=Config, posts=posts, seq=seq,
+                           cycle=cycle)
 
 
 @app.route('/login', methods=['GET', 'POST'])

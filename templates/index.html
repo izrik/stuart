@@ -10,8 +10,10 @@
     </div>
 
     <div class="index-post-list">
+    {% set index = seq().next %}
+    {% set odd_even = cycle(['odd', 'even']).next %}
     {% for post in posts %}
-        <div class="index-post index-post-{{post.id}}">
+        <div class="index-post index-post-id-{{post.id}} index-post-index-{{index()}} index-post-{{odd_even()}}">
             <p><a href="{{ url_for('get_post', post_id=post.id) }}">{{ post.title }}</a></p>
         </div>
     {% endfor %}
