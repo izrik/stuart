@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<div class="container">
     <div class="index-post-list">
         {% if current_user.is_authenticated %}
         <div>
@@ -19,5 +20,6 @@
         </div>
     {% endfor %}
     </div>
+</div>
 
 {% endblock %}

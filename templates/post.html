@@ -2,7 +2,7 @@
 {% block title %}{{ super() }} - {{ post.title }} {% endblock %}
 {% block content %}
 
-
+<div class="container">
 <a href="{{ url_for('get_post', post_id=post.id) }}">
     <h1 class="post-title">{{ post.title }}</h1>
 </a>
@@ -18,5 +18,6 @@
         <a href="{{ url_for('edit_post', post_id=post.id) }}">Edit</a>
     </div>
 {% endif %}
+</div>
 
 {% endblock %}
