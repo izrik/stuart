@@ -1,5 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}{{ super() }} - Editing "{{ post.title if post.title != None }}" (ID {{post.id}}){% endblock %}
+
+{% block head %}
+{{ super() }}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/css/bootstrap-markdown.min.css"
+      rel="stylesheet"/>
+{% endblock %}
+
 {% block content %}
 
 <div class="container">
