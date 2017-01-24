@@ -8,6 +8,14 @@
         {{ config.SITENAME }}
         {% endblock title %}
     </title>
+    <style>
+        {% block style %}
+        body {
+            padding-top: 80px;
+            padding-bottom: 15px;
+        }
+        {% endblock %}
+    </style>
 </head>
 <body>
 <div id="top-level">
