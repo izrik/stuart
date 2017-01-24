@@ -36,6 +36,7 @@
 
     {% block footer %}
     <div class="container">
+        <br/>
         {% if current_user.is_authenticated %}
         <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
         {% else %}
