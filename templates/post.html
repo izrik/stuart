@@ -10,7 +10,7 @@
     <p class="post-author">Posted by izrik</p>
 
     <div class="post-content">
-        {{ post.content }}
+        {{ post.content|gfm }}
     </div>
 
     {% if current_user.is_authenticated %}
