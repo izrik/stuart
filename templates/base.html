@@ -18,28 +18,35 @@
     </style>
 </head>
 <body>
-<div id="top-level">
-    <div id="header">
-        <h1><a href="/">{{ config.SITENAME }}</a></h1>
+
+    {% block header %}
+    <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">{{ config.SITENAME }}</a>
+            </div>
+        </div>
     </div>
-    <div id="content">
+    {% endblock header %}
+
+    <div class="container">
         {% block content %}
         {% endblock content %}
     </div>
-    <div id="footer">
-        {% block footer %}
-            {% if current_user.is_authenticated %}
-            <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
-            {% else %}
-            <small><a href="/login">Login</a></small><br/>
-            {% endif %}
-            {% block copyright %}
-            <small>Copyright &copy; 2017 by the author.</small><br/>
-            {% endblock %}
-            <small>Powered by <a href="https://github.com/izrik/blogware">blogware</a>.</small><br/>
-            <small>Revision: <code>{{ Options.get_revision() }}</code></small>
+
+    {% block footer %}
+    <div class="container">
+        {% if current_user.is_authenticated %}
+        <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
+        {% else %}
+        <small><a href="/login">Login</a></small><br/>
+        {% endif %}
+        {% block copyright %}
+        <small>Copyright &copy; 2017 by the author.</small><br/>
         {% endblock %}
+        <small>Powered by <a href="https://github.com/izrik/blogware">blogware</a>.</small><br/>
+        <small>Revision: <code>{{ Options.get_revision() }}</code></small>
     </div>
-</div>
+    {% endblock %}
 </body>
 </html>

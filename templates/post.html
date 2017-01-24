@@ -2,17 +2,15 @@
 {% block title %}{{ super() }} - {{ post.title }} {% endblock %}
 {% block content %}
 
+
+<a href="{{ url_for('get_post', post_id=post.id) }}">
+    <h1 class="post-title">{{ post.title }}</h1>
+</a>
+<p class="post-date">{{ post.date.strftime('%Y-%m-%d') }}</p>
+<p class="post-author">Posted by izrik</p>
+
 <div class="post-content">
-
-    <div class="post-header">
-        <h1 class="post-title">{{ post.title }}</h1>
-        <p class="post-date">{{ post.date.strftime('%Y-%m-%d') }}</p>
-        <p class="post-author">Posted by izrik</p>
-    </div>
-
-    <div class="post-content">
-        {{ post.content }}
-    </div>
+    {{ post.content }}
 </div>
 
 {% if current_user.is_authenticated %}
