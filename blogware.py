@@ -7,13 +7,15 @@ from os import environ
 from datetime import datetime
 
 from flask import Flask, render_template_string, redirect, render_template, \
-    request, url_for, flash
+    request, url_for, flash, Markup
 from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin, current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from werkzeug.exceptions import ServiceUnavailable
 import git
+import gfm
+import markdown
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -152,6 +154,13 @@ def load_user(user_id):
 @app.context_processor
 def setup_options():
     return {'Options': Options}
+
+
+@app.template_filter(name='gfm')
+def render_gfm(s):
+    output = markdown.markdown(s, extensions=['gfm'])
+    moutput = Markup(output)
+    return moutput
 
 
 @app.route("/")
