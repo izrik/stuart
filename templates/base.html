@@ -16,6 +16,8 @@
         }
         {% endblock %}
     </style>
+    {% block head %}
+    {% endblock %}
 </head>
 <body>
 
@@ -47,5 +49,8 @@
         <small>Revision: <code>{{ Options.get_revision() }}</code></small>
     </div>
     {% endblock %}
+
+    {% block endbody %}
+    {% endblock endbody %}
 </body>
 </html>

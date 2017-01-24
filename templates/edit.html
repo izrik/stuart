@@ -1,5 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}{{ super() }} - Editing "{{ post.title if post.title != None }}" (ID {{post.id}}){% endblock %}
+
+{% block head %}
+{{ super() }}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/css/bootstrap-markdown.min.css"
+      rel="stylesheet"/>
+{% endblock %}
+
 {% block content %}
 
 <div class="container">
@@ -7,7 +14,7 @@
         <table>
             <tr><td>ID</td><td>{{ post.id }}</td></tr>
             <tr><td>Title</td><td><input type="text" name="title" value="{{ post.title if post.title != None }}" /></td></tr>
-            <tr><td>Content</td><td><textarea name="content" rows="24" cols="80">{{ post.content if post.content != None }}</textarea> </td></tr>
+            <tr><td>Content</td><td><textarea name="content" rows="24" cols="80" data-provide="markdown">{{ post.content if post.content != None }}</textarea> </td></tr>
             <tr><td>Date</td><td>{{ post.date if post.date != None }}</td></tr>
             <tr><td>Is Draft?</td><td><input type="checkbox" name="is_draft" {% if post.is_draft %} checked {% endif %} /></td></tr>
         </table>
@@ -15,4 +22,15 @@
     </form>
 </div>
 
+{% endblock %}
+
+{% block endbody %}
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/js/bootstrap-markdown.min.js">
+    </script>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/markdown.js/0.5.0/markdown.min.js">
+    </script>
 {% endblock %}
