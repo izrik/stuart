@@ -1,23 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
 
-    {% if current_user.is_authenticated %}
-        <a href="/logout">Logout</a>
-    {% else %}
-        <a href="/login">Login</a>
-    {% endif %}
-
-    {% for post in posts %}
+<div class="container">
+    <div class="index-post-list">
+        {% if current_user.is_authenticated %}
         <div>
-            <p><a href="{{ url_for('get_post', post_id=post.id) }}">{{ post.title }}</a></p>
+            <a href="/new"><span class="glyphicon glyphicon-plus"></span>New Post</a>
+        </div>
+        {% endif %}
+    {% set index = Options.seq().next %}
+    {% set odd_even = Options.cycle(['odd', 'even']).next %}
+    {% for post in posts %}
+        <div class="index-post index-post-id-{{post.id}} index-post-index-{{index()}} index-post-{{odd_even()}}">
+            <a href="{{ url_for('get_post', post_id=post.id) }}">
+                <h1>{{ post.title }}</h1>
+            </a>
+            <p>{{ post.date.strftime('%Y-%m-%d') }} - izrik</p>
+            <hr/>
         </div>
     {% endfor %}
-
-
-    {% if current_user.is_authenticated %}
-        <div>
-            <a href="/new">Create New</a>
-        </div>
-    {% endif %}
+    </div>
+</div>
 
 {% endblock %}
