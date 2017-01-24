@@ -14,7 +14,7 @@
         <table>
             <tr><td>ID</td><td>{{ post.id }}</td></tr>
             <tr><td>Title</td><td><input type="text" name="title" value="{{ post.title if post.title != None }}" /></td></tr>
-            <tr><td>Content</td><td><textarea name="content" rows="24" cols="80">{{ post.content if post.content != None }}</textarea> </td></tr>
+            <tr><td>Content</td><td><textarea name="content" rows="24" cols="80" data-provide="markdown">{{ post.content if post.content != None }}</textarea> </td></tr>
             <tr><td>Date</td><td>{{ post.date if post.date != None }}</td></tr>
             <tr><td>Is Draft?</td><td><input type="checkbox" name="is_draft" {% if post.is_draft %} checked {% endif %} /></td></tr>
         </table>
