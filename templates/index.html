@@ -2,6 +2,11 @@
 {% block content %}
 
     <div class="index-post-list">
+        {% if current_user.is_authenticated %}
+        <div>
+            <a href="/new"><span class="glyphicon glyphicon-plus"></span>New Post</a>
+        </div>
+        {% endif %}
     {% set index = seq().next %}
     {% set odd_even = cycle(['odd', 'even']).next %}
     {% for post in posts %}
@@ -14,11 +19,5 @@
         </div>
     {% endfor %}
     </div>
-
-    {% if current_user.is_authenticated %}
-        <div class="create-new-post">
-            <a href="/new">Create New</a>
-        </div>
-    {% endif %}
 
 {% endblock %}
