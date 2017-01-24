@@ -8,8 +8,8 @@
             <a href="/new"><span class="glyphicon glyphicon-plus"></span>New Post</a>
         </div>
         {% endif %}
-    {% set index = seq().next %}
-    {% set odd_even = cycle(['odd', 'even']).next %}
+    {% set index = Options.seq().next %}
+    {% set odd_even = Options.cycle(['odd', 'even']).next %}
     {% for post in posts %}
         <div class="index-post index-post-id-{{post.id}} index-post-index-{{index()}} index-post-{{odd_even()}}">
             <a href="{{ url_for('get_post', post_id=post.id) }}">

@@ -121,25 +121,27 @@ class Option(db.Model):
 class Options(object):
     @staticmethod
     def get(key, default_value=None):
-        option = ds.Option.query.get(key)
+        option = Option.query.get(key)
         if option is None:
             return default_value
         return option.value
 
     @staticmethod
     def get_title():
-        return Options.get('title', 'Tudor')
+        return Options.get('title', Config.SITENAME)
 
     @staticmethod
     def get_revision():
         return __revision__
 
+    @staticmethod
+    def seq():
+        i = 0
+        while True:
+            yield i
+            i += 1
 
-def seq():
-    i = 0
-    while True:
-        yield i
-        i += 1
+    cycle = cycle
 
 
 @login_manager.user_loader
@@ -155,8 +157,7 @@ def setup_options():
 @app.route("/")
 def index():
     posts = Post.query.order_by(Post.date.desc()).limit(10)
-    return render_template("index.html", config=Config, posts=posts, seq=seq,
-                           cycle=cycle)
+    return render_template("index.html", config=Config, posts=posts)
 
 
 @app.route('/login', methods=['GET', 'POST'])
