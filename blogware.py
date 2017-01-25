@@ -280,6 +280,16 @@ def create_new():
     return redirect(url_for('get_post', post_id=post.id))
 
 
+@app.route('/tag/<tag_id>', methods=['GET'])
+def get_tag(tag_id):
+    tag = Tag.query.get(tag_id)
+    query = tag.posts
+    if not current_user.is_authenticated:
+        query = query.filter_by(is_draft=False)
+    posts = query
+    return render_template("tag.html", tag=tag, posts=posts)
+
+
 @app.route("/logout")
 def logout():
     logout_user()
