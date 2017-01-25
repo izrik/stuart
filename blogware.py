@@ -1,5 +1,24 @@
 #!/usr/bin/env python
 
+# blogware - a python blogging system
+# Copyright (C) 2016-2017 izrik
+#
+# This file is a part of blogware.
+#
+# Blogware is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Blogware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with blogware.  If not, see <http://www.gnu.org/licenses/>.
+
+
 import argparse
 import random
 from itertools import cycle
@@ -145,6 +164,9 @@ class Options(object):
 
     cycle = cycle
 
+    Config = Config
+    config = Config
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -166,7 +188,7 @@ def render_gfm(s):
 @app.route("/")
 def index():
     posts = Post.query.order_by(Post.date.desc()).limit(10)
-    return render_template("index.html", config=Config, posts=posts)
+    return render_template("index.html", posts=posts)
 
 
 @app.route('/login', methods=['GET', 'POST'])
