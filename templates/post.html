@@ -23,7 +23,7 @@
 
 <div class="container">
     <a href="{{ url_for('get_post', post_id=post.id) }}">
-        <h1 class="post-title">{{ post.title }}</h1>
+        <h1 class="post-title">{{ post.title }}{% if post.is_draft%} <small>(Draft)</small>{% endif %}</h1>
     </a>
     <p class="post-date">{{ post.date.strftime('%Y-%m-%d') }}</p>
     <p class="post-author">Posted by izrik</p>
