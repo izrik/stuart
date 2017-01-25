@@ -31,7 +31,7 @@ from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin, current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from werkzeug.exceptions import ServiceUnavailable
+from werkzeug.exceptions import ServiceUnavailable, Unauthorized
 import git
 import gfm
 import markdown
@@ -187,7 +187,10 @@ def render_gfm(s):
 
 @app.route("/")
 def index():
-    posts = Post.query.order_by(Post.date.desc()).limit(10)
+    query = Post.query
+    if not current_user.is_authenticated:
+        query = query.filter_by(is_draft=False)
+    posts = query.order_by(Post.date.desc()).limit(10)
     return render_template("index.html", posts=posts)
 
 
@@ -218,12 +221,14 @@ def login():
 def get_post(post_id):
 
     post = Post.query.get(post_id)
+    if post.is_draft and not current_user.is_authenticated:
+        raise Unauthorized()
     user = current_user
     return render_template('post.html', config=Config, post=post, user=user)
 
 
-@login_required
 @app.route('/edit/<post_id>', methods=['GET', 'POST'])
+@login_required
 def edit_post(post_id):
     post = Post.query.get(post_id)
     if request.method == 'GET':
@@ -243,8 +248,8 @@ def edit_post(post_id):
     return redirect(url_for('get_post', post_id=post_id))
 
 
-@login_required
 @app.route('/new', methods=['GET', 'POST'])
+@login_required
 def create_new():
     if request.method == 'GET':
         post = Post('', '', datetime.now(), True)
