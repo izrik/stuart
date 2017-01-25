@@ -88,6 +88,7 @@ if __name__ == "__main__":
 
 app = Flask(__name__)
 
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config["SECRET_KEY"] = Config.SECRET_KEY  # for WTF-forms and login
 app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
 
