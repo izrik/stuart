@@ -116,12 +116,20 @@ class Guest(AnonymousUserMixin):
     pass
 
 
+tags_table = db.Table(
+    'tags_posts',
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id')))
+
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
     content = db.Column(db.Text)
     date = db.Column(db.DateTime)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
+    tags = db.relationship('Tag', secondary=tags_table,
+                           backref=db.backref('posts', lazy='dynamic'))
 
     def __init__(self, title, content, date, is_draft=False):
         self.title = title
@@ -129,6 +137,10 @@ class Post(db.Model):
         self.date = date
         self.is_draft = is_draft
 
+
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
 
 class Option(db.Model):
     name = db.Column(db.String(100), primary_key=True)
