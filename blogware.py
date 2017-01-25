@@ -225,8 +225,8 @@ def get_post(post_id):
     return render_template('post.html', config=Config, post=post, user=user)
 
 
-@login_required
 @app.route('/edit/<post_id>', methods=['GET', 'POST'])
+@login_required
 def edit_post(post_id):
     post = Post.query.get(post_id)
     if request.method == 'GET':
@@ -246,8 +246,8 @@ def edit_post(post_id):
     return redirect(url_for('get_post', post_id=post_id))
 
 
-@login_required
 @app.route('/new', methods=['GET', 'POST'])
+@login_required
 def create_new():
     if request.method == 'GET':
         post = Post('', '', datetime.now(), True)
