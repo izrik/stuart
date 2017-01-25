@@ -187,7 +187,10 @@ def render_gfm(s):
 
 @app.route("/")
 def index():
-    posts = Post.query.order_by(Post.date.desc()).limit(10)
+    query = Post.query
+    if not current_user.is_authenticated:
+        query = query.filter_by(is_draft=False)
+    posts = query.order_by(Post.date.desc()).limit(10)
     return render_template("index.html", posts=posts)
 
 
