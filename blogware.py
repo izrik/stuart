@@ -164,6 +164,9 @@ class Options(object):
 
     cycle = cycle
 
+    Config = Config
+    config = Config
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -185,7 +188,7 @@ def render_gfm(s):
 @app.route("/")
 def index():
     posts = Post.query.order_by(Post.date.desc()).limit(10)
-    return render_template("index.html", config=Config, posts=posts)
+    return render_template("index.html", posts=posts)
 
 
 @app.route('/login', methods=['GET', 'POST'])
