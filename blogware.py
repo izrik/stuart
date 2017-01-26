@@ -143,6 +143,10 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
+    def __init__(self, name):
+        self.name = name
+
+
 class Option(db.Model):
     name = db.Column(db.String(100), primary_key=True)
     value = db.Column(db.String(100), nullable=True)
@@ -252,10 +256,32 @@ def edit_post(post_id):
     content = request.form['content']
     is_draft = not (not ('is_draft' in request.form and
                          request.form['is_draft']))
+    tags = request.form['tags']
+
     post.title = title
     post.content = content
     post.is_draft = is_draft
 
+    current_tags = set(post.tags)
+    next_tag_names = set(
+        name for name in (
+            name.strip() for name in tags.split(',') if name)
+        if name)
+    next_tags = set()
+    for name in next_tag_names:
+        tag = Tag.query.filter_by(name=name).first()
+        if tag is None:
+            tag = Tag(name)
+        next_tags.add(tag)
+    tags_to_add = next_tags.difference(current_tags)
+    tags_to_remove = current_tags.difference(next_tags)
+
+    for ttr in tags_to_remove:
+        post.tags.remove(ttr)
+    post.tags.extend(tags_to_add)
+
+    for tta in tags_to_add:
+        db.session.add(tta)
     db.session.add(post)
     db.session.commit()
     return redirect(url_for('get_post', post_id=post_id))
