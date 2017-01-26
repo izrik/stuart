@@ -37,6 +37,8 @@
             <p>{{ post.date.strftime('%Y-%m-%d') }} - izrik</p>
             <hr/>
         </div>
+    {% else %}
+        <p>No posts found</p>
     {% endfor %}
     </div>
 </div>
