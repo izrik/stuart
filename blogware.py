@@ -42,6 +42,7 @@ try:
 except git.InvalidGitRepositoryError:
     __revision__ = 'unknown'
 
+
 class Config(object):
     SECRET_KEY = environ.get('BLOGWARE_SECRET_KEY', 'secret')
     PORT = environ.get('BLOGWARE_PORT', 1177)
