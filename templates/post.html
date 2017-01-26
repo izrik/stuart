@@ -29,7 +29,7 @@
     <p class="post-author">Posted by izrik</p>
     <p class="post-tags">Tags:
         {% for tag in post.tags %}
-        {{ tag.name }}
+        <a href="{{ url_for('get_tag', tag_id=tag.id) }}">{{ tag.name }}</a>
         {% endfor %}
     </p>
 
