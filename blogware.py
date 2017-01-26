@@ -307,7 +307,13 @@ def create_new():
     return redirect(url_for('get_post', post_id=post.id))
 
 
-@app.route('/tag/<tag_id>', methods=['GET'])
+@app.route('/tags', methods=['GET'])
+def list_tags():
+    tags = Tag.query
+    return render_template('list_tags.html', tags=tags)
+
+
+@app.route('/tags/<tag_id>', methods=['GET'])
 def get_tag(tag_id):
     tag = Tag.query.get(tag_id)
     query = tag.posts
