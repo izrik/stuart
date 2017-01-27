@@ -21,6 +21,9 @@
 <head lang="en">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="/static/blogware.css" rel="stylesheet"/>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         {% block title %}
         {{ Options.config.SITENAME }}
@@ -69,6 +72,7 @@
     {% endblock %}
 
     {% block endbody %}
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     {% endblock endbody %}
 </body>
 </html>
