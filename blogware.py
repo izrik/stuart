@@ -42,6 +42,7 @@ try:
 except git.InvalidGitRepositoryError:
     __revision__ = 'unknown'
 
+
 class Config(object):
     SECRET_KEY = environ.get('BLOGWARE_SECRET_KEY', 'secret')
     PORT = environ.get('BLOGWARE_PORT', 1177)
@@ -88,6 +89,7 @@ if __name__ == "__main__":
 
 app = Flask(__name__)
 
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config["SECRET_KEY"] = Config.SECRET_KEY  # for WTF-forms and login
 app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
 
@@ -116,18 +118,34 @@ class Guest(AnonymousUserMixin):
     pass
 
 
+tags_table = db.Table(
+    'tags_posts',
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id')))
+
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
     content = db.Column(db.Text)
     date = db.Column(db.DateTime)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
+    tags = db.relationship('Tag', secondary=tags_table,
+                           backref=db.backref('posts', lazy='dynamic'))
 
     def __init__(self, title, content, date, is_draft=False):
         self.title = title
         self.content = content
         self.date = date
         self.is_draft = is_draft
+
+
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+
+    def __init__(self, name):
+        self.name = name
 
 
 class Option(db.Model):
@@ -239,10 +257,32 @@ def edit_post(post_id):
     content = request.form['content']
     is_draft = not (not ('is_draft' in request.form and
                          request.form['is_draft']))
+    tags = request.form['tags']
+
     post.title = title
     post.content = content
     post.is_draft = is_draft
 
+    current_tags = set(post.tags)
+    next_tag_names = set(
+        name for name in (
+            name.strip() for name in tags.split(',') if name)
+        if name)
+    next_tags = set()
+    for name in next_tag_names:
+        tag = Tag.query.filter_by(name=name).first()
+        if tag is None:
+            tag = Tag(name)
+        next_tags.add(tag)
+    tags_to_add = next_tags.difference(current_tags)
+    tags_to_remove = current_tags.difference(next_tags)
+
+    for ttr in tags_to_remove:
+        post.tags.remove(ttr)
+    post.tags.extend(tags_to_add)
+
+    for tta in tags_to_add:
+        db.session.add(tta)
     db.session.add(post)
     db.session.commit()
     return redirect(url_for('get_post', post_id=post_id))
@@ -265,6 +305,22 @@ def create_new():
     db.session.add(post)
     db.session.commit()
     return redirect(url_for('get_post', post_id=post.id))
+
+
+@app.route('/tags', methods=['GET'])
+def list_tags():
+    tags = Tag.query
+    return render_template('list_tags.html', tags=tags)
+
+
+@app.route('/tags/<tag_id>', methods=['GET'])
+def get_tag(tag_id):
+    tag = Tag.query.get(tag_id)
+    query = tag.posts
+    if not current_user.is_authenticated:
+        query = query.filter_by(is_draft=False)
+    posts = query
+    return render_template("tag.html", tag=tag, posts=posts)
 
 
 @app.route("/logout")

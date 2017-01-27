@@ -21,6 +21,9 @@
 <head lang="en">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="/static/blogware.css" rel="stylesheet"/>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         {% block title %}
         {{ Options.config.SITENAME }}
@@ -43,7 +46,14 @@
     <div class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
-                <a class="navbar-brand" href="/">{{ Options.config.SITENAME }}</a>
+                <a class="navbar-brand" href="{{ url_for('index') }}">{{ Options.config.SITENAME }}</a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a class="nav-link" href="{{ url_for('list_tags') }}">Tags</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -69,6 +79,7 @@
     {% endblock %}
 
     {% block endbody %}
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     {% endblock endbody %}
 </body>
 </html>

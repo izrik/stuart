@@ -18,30 +18,23 @@
 #}
 
 {% extends 'base.html' %}
-{% block title %}{{ super() }} - {{ post.title }} {% endblock %}
 {% block content %}
 
 <div class="container">
-    <a href="{{ url_for('get_post', post_id=post.id) }}">
-        <h1 class="post-title">{{ post.title }}{% if post.is_draft%} <small>(Draft)</small>{% endif %}</h1>
-    </a>
-    <p class="post-date">{{ post.date.strftime('%Y-%m-%d') }}</p>
-    <p class="post-author">Posted by izrik</p>
-    <p class="post-tags">Tags:
-        {% for tag in post.tags %}
-        <a href="{{ url_for('get_tag', tag_id=tag.id) }}">{{ tag.name }}</a>
-        {% endfor %}
-    </p>
-
-    <div class="post-content">
-        {{ post.content|gfm }}
-    </div>
-
-    {% if current_user.is_authenticated %}
-        <div>
-            <a href="{{ url_for('edit_post', post_id=post.id) }}">Edit</a>
+    <div class="index-tag-list">
+    {% set index = Options.seq().next %}
+    {% set odd_even = Options.cycle(['odd', 'even']).next %}
+    {% for tag in tags %}
+        <div class="index-tag index-tag-id-{{tag.id}} index-tag-index-{{index()}} index-tag-{{odd_even()}}">
+            <a href="{{ url_for('get_tag', tag_id=tag.id) }}">
+                <h1>{{ tag.name }} <small>- {{ tag.posts.count() }} posts</small></h1>
+            </a>
+            <hr/>
         </div>
-    {% endif %}
+    {% else %}
+        <p>No tags found</p>
+    {% endfor %}
+    </div>
 </div>
 
 {% endblock %}
