@@ -32,10 +32,18 @@
         <a href="{{ url_for('get_tag', tag_id=tag.id) }}">{{ tag.name }}</a>
         {% endfor %}
     </p>
+    <hr/>
 
     <div class="post-content">
         {{ post.content|gfm }}
     </div>
+    <hr/>
+    {% if post.notes and current_user.is_authenticated %}
+    <div class="post-content">
+        {{ post.notes|gfm }}
+    </div>
+    <hr/>
+    {% endif %}
 
     {% if current_user.is_authenticated %}
         <div>

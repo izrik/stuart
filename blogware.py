@@ -128,16 +128,18 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
     content = db.Column(db.Text)
+    notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
     tags = db.relationship('Tag', secondary=tags_table,
                            backref=db.backref('posts', lazy='dynamic'))
 
-    def __init__(self, title, content, date, is_draft=False):
+    def __init__(self, title, content, date, is_draft=False, notes=None):
         self.title = title
         self.content = content
         self.date = date
         self.is_draft = is_draft
+        self.notes = notes
 
 
 class Tag(db.Model):
@@ -256,12 +258,14 @@ def edit_post(post_id):
 
     title = request.form['title']
     content = request.form['content']
+    notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
                          request.form['is_draft']))
     tags = request.form['tags']
 
     post.title = title
     post.content = content
+    post.notes = notes
     post.is_draft = is_draft
 
     current_tags = set(post.tags)
@@ -299,9 +303,10 @@ def create_new():
 
     title = request.form['title']
     content = request.form['content']
+    notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
                          request.form['is_draft']))
-    post = Post(title, content, datetime.now(), is_draft)
+    post = Post(title, content, datetime.now(), is_draft, notes)
 
     db.session.add(post)
     db.session.commit()
