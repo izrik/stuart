@@ -166,8 +166,8 @@ class Options(object):
         return option.value
 
     @staticmethod
-    def get_title():
-        return Options.get('title', Config.SITENAME)
+    def get_sitename():
+        return Options.get('sitename', Config.SITENAME)
 
     @staticmethod
     def get_revision():
