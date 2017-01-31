@@ -258,12 +258,14 @@ def edit_post(post_id):
 
     title = request.form['title']
     content = request.form['content']
+    notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
                          request.form['is_draft']))
     tags = request.form['tags']
 
     post.title = title
     post.content = content
+    post.notes = notes
     post.is_draft = is_draft
 
     current_tags = set(post.tags)
@@ -301,9 +303,10 @@ def create_new():
 
     title = request.form['title']
     content = request.form['content']
+    notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
                          request.form['is_draft']))
-    post = Post(title, content, datetime.now(), is_draft)
+    post = Post(title, content, datetime.now(), is_draft, notes)
 
     db.session.add(post)
     db.session.commit()
