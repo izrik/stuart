@@ -166,8 +166,12 @@ class Options(object):
         return option.value
 
     @staticmethod
-    def get_title():
-        return Options.get('title', Config.SITENAME)
+    def get_sitename():
+        return Options.get('sitename', Config.SITENAME)
+
+    @staticmethod
+    def get_siteurl():
+        return Options.get('siteurl', Config.SITEURL)
 
     @staticmethod
     def get_revision():
@@ -181,9 +185,6 @@ class Options(object):
             i += 1
 
     cycle = cycle
-
-    Config = Config
-    config = Config
 
 
 @login_manager.user_loader
