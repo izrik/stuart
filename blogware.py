@@ -170,6 +170,10 @@ class Options(object):
         return Options.get('sitename', Config.SITENAME)
 
     @staticmethod
+    def get_siteurl():
+        return Options.get('siteurl', Config.SITEURL)
+
+    @staticmethod
     def get_revision():
         return __revision__
 
