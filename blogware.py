@@ -128,16 +128,18 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
     content = db.Column(db.Text)
+    notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
     tags = db.relationship('Tag', secondary=tags_table,
                            backref=db.backref('posts', lazy='dynamic'))
 
-    def __init__(self, title, content, date, is_draft=False):
+    def __init__(self, title, content, date, is_draft=False, notes=None):
         self.title = title
         self.content = content
         self.date = date
         self.is_draft = is_draft
+        self.notes = notes
 
 
 class Tag(db.Model):
