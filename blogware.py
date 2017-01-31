@@ -186,9 +186,6 @@ class Options(object):
 
     cycle = cycle
 
-    Config = Config
-    config = Config
-
 
 @login_manager.user_loader
 def load_user(user_id):
