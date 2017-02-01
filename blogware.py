@@ -121,8 +121,8 @@ class Guest(AnonymousUserMixin):
 
 tags_table = db.Table(
     'tags_posts',
-    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
-    db.Column('post_id', db.Integer, db.ForeignKey('post.id')))
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), index=True),
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), index=True))
 
 
 class Post(db.Model):
@@ -169,7 +169,7 @@ class Post(db.Model):
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False, index=True)
 
     def __init__(self, name):
         self.name = name
