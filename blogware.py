@@ -236,8 +236,10 @@ def index():
     query = Post.query
     if not current_user.is_authenticated:
         query = query.filter_by(is_draft=False)
-    posts = query.order_by(Post.date.desc()).limit(10)
-    return render_template("index.html", posts=posts)
+    query = query.order_by(Post.date.desc())
+    pager = query.paginate()
+    posts = query
+    return render_template("index.html", posts=posts, pager=pager)
 
 
 @app.route('/login', methods=['GET', 'POST'])
