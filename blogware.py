@@ -147,6 +147,9 @@ class Post(db.Model):
 
     @content.setter
     def content(self, value):
+        if value is None:
+            value = ''
+        value = str(value)
         self._content = value
 
 
