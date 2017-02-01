@@ -24,6 +24,7 @@ import random
 from itertools import cycle
 from os import environ
 from datetime import datetime
+import re
 
 from flask import Flask, render_template_string, redirect, render_template, \
     request, url_for, flash, Markup
@@ -128,6 +129,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
     _content = db.Column(db.Text, name='content')
+    summary = db.Column(db.Text)
     notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
@@ -145,12 +147,19 @@ class Post(db.Model):
     def content(self):
         return self._content
 
+    @staticmethod
+    def summarize(value):
+        stripped = re.sub(r'</?[^>]+/?>', '', value)
+        condensed = re.sub(r'\s+', ' ', stripped)
+        return condensed
+
     @content.setter
     def content(self, value):
         if value is None:
             value = ''
         value = str(value)
         self._content = value
+        self.summary = self.summarize(value)
 
 
 class Tag(db.Model):
