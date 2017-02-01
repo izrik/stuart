@@ -35,6 +35,7 @@
                 <h1>{{ post.title }}{% if post.is_draft%} <small>(Draft)</small>{% endif %}</h1>
             </a>
             <p>{{ post.date.strftime('%Y-%m-%d') }} - izrik</p>
+            <blockquote>{{ post.summary if post.summary }}</blockquote>
             <hr/>
         </div>
     {% else %}
