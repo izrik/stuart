@@ -150,8 +150,13 @@ class Post(db.Model):
     @staticmethod
     def summarize(value):
         stripped = re.sub(r'</?[^>]+/?>', '', value)
-        condensed = re.sub(r'\s+', ' ', stripped)
-        return condensed
+        cleaned = re.sub(r'[^a-zA-Z01-9,.?!]', ' ', stripped)
+        normalized = re.sub(r'\s*[.,?!]\s*', '\1 ', cleaned)
+        condensed = re.sub(r'\s+', ' ', normalized)
+        truncated = condensed
+        if len(truncated) > 100:
+            truncated = condensed[:100] + '...'
+        return truncated
 
     @content.setter
     def content(self, value):
