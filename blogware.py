@@ -121,8 +121,8 @@ class Guest(AnonymousUserMixin):
 
 tags_table = db.Table(
     'tags_posts',
-    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
-    db.Column('post_id', db.Integer, db.ForeignKey('post.id')))
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), index=True),
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), index=True))
 
 
 class Post(db.Model):
@@ -169,7 +169,7 @@ class Post(db.Model):
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False, index=True)
 
     def __init__(self, name):
         self.name = name
@@ -331,7 +331,22 @@ def create_new():
     notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
                          request.form['is_draft']))
+    tags = request.form['tags']
+
     post = Post(title, content, datetime.now(), is_draft, notes)
+
+    next_tag_names = set(
+        name for name in (
+            name.strip() for name in tags.split(',') if name)
+        if name)
+    next_tags = set()
+    for name in next_tag_names:
+        tag = Tag.query.filter_by(name=name).first()
+        if tag is None:
+            tag = Tag(name)
+        next_tags.add(tag)
+    tags_to_add = next_tags
+    post.tags.extend(tags_to_add)
 
     db.session.add(post)
     db.session.commit()
