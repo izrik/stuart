@@ -24,6 +24,7 @@ import random
 from itertools import cycle
 from os import environ
 from datetime import datetime
+import re
 
 from flask import Flask, render_template_string, redirect, render_template, \
     request, url_for, flash, Markup
@@ -127,7 +128,8 @@ tags_table = db.Table(
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
-    content = db.Column(db.Text)
+    _content = db.Column(db.Text, name='content')
+    summary = db.Column(db.Text)
     notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
@@ -140,6 +142,29 @@ class Post(db.Model):
         self.date = date
         self.is_draft = is_draft
         self.notes = notes
+
+    @property
+    def content(self):
+        return self._content
+
+    @staticmethod
+    def summarize(value):
+        stripped = re.sub(r'</?[^>]+/?>', '', value)
+        cleaned = re.sub(r'[^a-zA-Z01-9,.?!]', ' ', stripped)
+        normalized = re.sub(r'\s*[.,?!]\s*', '\1 ', cleaned)
+        condensed = re.sub(r'\s+', ' ', normalized)
+        truncated = condensed
+        if len(truncated) > 100:
+            truncated = condensed[:100] + '...'
+        return truncated
+
+    @content.setter
+    def content(self, value):
+        if value is None:
+            value = ''
+        value = unicode(value)
+        self._content = value
+        self.summary = self.summarize(value)
 
 
 class Tag(db.Model):
