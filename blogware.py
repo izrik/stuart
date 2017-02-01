@@ -127,7 +127,7 @@ tags_table = db.Table(
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
-    content = db.Column(db.Text)
+    _content = db.Column(db.Text, name='content')
     notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
@@ -140,6 +140,14 @@ class Post(db.Model):
         self.date = date
         self.is_draft = is_draft
         self.notes = notes
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, value):
+        self._content = value
 
 
 class Tag(db.Model):
