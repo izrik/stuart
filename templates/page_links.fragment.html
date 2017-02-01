@@ -1,0 +1,34 @@
+<nav class="paginate-container">
+<ul class="pagination">
+    <li>
+        <a rel="prev" {% if pager.has_prev %} href="{{ url_for('index', page=pager.prev_num, per_page=pager.per_page) }}" {% endif %}>
+            <span>
+                <span class="glyphicon glyphicon-chevron-left input-xs"></span>
+            </span>
+        </a>
+    </li>
+
+    {% for page in pager.iter_pages(left_current=1, right_current=2, left_edge=1, right_edge=1) %}
+    <li {%if page == pager.page and pager.pages > 1%} class="active"{%endif%}>
+        {% if page %}
+            {% if page != pager.page %}
+                <a href="{{ url_for('index', page=page, per_page=pager.per_page) }}">{{ page }}</a>
+            {% else %}
+                <a rel="current">{{ page }}</a>
+            {% endif %}
+        {% else %}
+            <a><span>…</span></a>
+        {% endif %}
+    </li>
+    {% else %}
+    <li>
+        <a><span>…</span></a>
+    </li>
+    {% endfor %}
+    <li>
+        <a rel="next" {% if pager.has_next %} href="{{ url_for('index', page=pager.next_num, per_page=pager.per_page) }}" {% endif %}>
+            <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+    </li>
+</ul>
+</nav>
