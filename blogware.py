@@ -162,7 +162,7 @@ class Post(db.Model):
     def content(self, value):
         if value is None:
             value = ''
-        value = str(value)
+        value = unicode(value)
         self._content = value
         self.summary = self.summarize(value)
 
