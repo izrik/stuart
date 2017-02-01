@@ -1,0 +1,27 @@
+<div class="paginate-container">
+<div class="pagination">
+    {% if pager.has_prev %}
+        <a rel="prev" class="previous_page" href="{{ url_for('index', page=pager.prev_num, per_page=pager.per_page) }}">&lt;</a>
+    {% else %}
+        <span class="previous_page_disabled">&lt;</span>
+    {% endif %}
+    {% for page in pager.iter_pages(left_current=1, right_current=2, left_edge=1, right_edge=1) %}
+        {% if page %}
+            {% if page != pager.page %}
+                <a class="page" href="{{ url_for('index', page=page, per_page=pager.per_page) }}">{{ page }}</a>
+            {% else %}
+                <span class="current">{{ page }}</span>
+            {% endif %}
+        {% else %}
+            <span class="gap">…</span>
+        {% endif %}
+    {% else %}
+        <span class="gap">1</span>
+    {% endfor %}
+    {% if pager.has_next %}
+        <a rel="next" class="next_page" href="{{ url_for('index', page=pager.next_num, per_page=pager.per_page) }}">&gt;</a>
+    {% else %}
+        <span class="next_page_disabled">&gt;</span>
+    {% endif %}
+</div>
+</div>
