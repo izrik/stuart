@@ -32,7 +32,7 @@ from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin, current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from werkzeug.exceptions import ServiceUnavailable, Unauthorized
+from werkzeug.exceptions import ServiceUnavailable, Unauthorized, NotFound
 import git
 import gfm
 import markdown
@@ -295,6 +295,10 @@ def login():
 def get_post(post_id):
 
     post = Post.query.get(post_id)
+    if not post:
+        post = Post.get_by_slug(post_id)
+    if not post:
+        raise NotFound()
     if post.is_draft and not current_user.is_authenticated:
         raise Unauthorized()
     user = current_user
