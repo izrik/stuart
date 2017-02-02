@@ -127,7 +127,7 @@ tags_table = db.Table(
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100))
+    _title = db.Column(db.String(100), name='title')
     _content = db.Column(db.Text, name='content')
     summary = db.Column(db.Text)
     notes = db.Column(db.Text)
@@ -165,6 +165,14 @@ class Post(db.Model):
         value = unicode(value)
         self._content = value
         self.summary = self.summarize(value)
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = value
 
 
 class Tag(db.Model):
