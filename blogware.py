@@ -153,7 +153,7 @@ class Post(db.Model):
     def summarize(value):
         stripped = re.sub(r'</?[^>]+/?>', '', value)
         cleaned = re.sub(r'[^a-zA-Z01-9,.?!]', ' ', stripped)
-        normalized = re.sub(r'\s*[.,?!]\s*', '\1 ', cleaned)
+        normalized = re.sub(r'\s*([.,?!])\s*', r'\1 ', cleaned)
         condensed = re.sub(r'\s+', ' ', normalized)
         truncated = condensed
         if len(truncated) > 100:
