@@ -291,12 +291,10 @@ def login():
     return redirect(url_for('index'))
 
 
-@app.route('/post/<post_id>', methods=['GET'])
-def get_post(post_id):
+@app.route('/post/<slug>', methods=['GET'])
+def get_post(slug):
 
-    post = Post.query.get(post_id)
-    if not post:
-        post = Post.get_by_slug(post_id)
+    post = Post.get_by_slug(slug)
     if not post:
         raise NotFound()
     if post.is_draft and not current_user.is_authenticated:
@@ -305,17 +303,15 @@ def get_post(post_id):
     return render_template('post.html', config=Config, post=post, user=user)
 
 
-@app.route('/edit/<post_id>', methods=['GET', 'POST'])
+@app.route('/edit/<slug>', methods=['GET', 'POST'])
 @login_required
-def edit_post(post_id):
-    post = Post.query.get(post_id)
-    if not post:
-        post = Post.get_by_slug(post_id)
+def edit_post(slug):
+    post = Post.get_by_slug(slug)
     if not post:
         raise NotFound()
     if request.method == 'GET':
         return render_template('edit.html', post=post, config=Config,
-                               post_url=url_for('edit_post', post_id=post.id))
+                               post_url=url_for('edit_post', slug=post.slug))
 
     title = request.form['title']
     content = request.form['content']
@@ -351,7 +347,7 @@ def edit_post(post_id):
         db.session.add(tta)
     db.session.add(post)
     db.session.commit()
-    return redirect(url_for('get_post', post_id=post_id))
+    return redirect(url_for('get_post', slug=post.slug))
 
 
 @app.route('/new', methods=['GET', 'POST'])
@@ -386,7 +382,7 @@ def create_new():
 
     db.session.add(post)
     db.session.commit()
-    return redirect(url_for('get_post', post_id=post.id))
+    return redirect(url_for('get_post', slug=post.slug))
 
 
 @app.route('/tags', methods=['GET'])

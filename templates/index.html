@@ -31,7 +31,7 @@
     {% set odd_even = Options.cycle(['odd', 'even']).next %}
     {% for post in pager.items %}
         <div class="index-post index-post-id-{{post.id}} index-post-index-{{index()}} index-post-{{odd_even()}}">
-            <a href="{{ url_for('get_post', post_id=post.id) }}">
+            <a href="{{ url_for('get_post', slug=post.slug) }}">
                 <h1>{{ post.title }}{% if post.is_draft%} <small>(Draft)</small>{% endif %}</h1>
             </a>
             <p>{{ post.date.strftime('%Y-%m-%d') }} - izrik</p>

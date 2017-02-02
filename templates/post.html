@@ -22,7 +22,7 @@
 {% block content %}
 
 <div class="container">
-    <a href="{{ url_for('get_post', post_id=post.id) }}">
+    <a href="{{ url_for('get_post', slug=post.slug) }}">
         <h1 class="post-title">{{ post.title }}{% if post.is_draft%} <small>(Draft)</small>{% endif %}</h1>
     </a>
     <p class="post-date">{{ post.date.strftime('%Y-%m-%d') }}</p>
@@ -47,7 +47,7 @@
 
     {% if current_user.is_authenticated %}
         <div>
-            <a href="{{ url_for('edit_post', post_id=post.id) }}">Edit</a>
+            <a href="{{ url_for('edit_post', slug=post.slug) }}">Edit</a>
         </div>
     {% endif %}
 </div>
