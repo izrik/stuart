@@ -73,6 +73,7 @@ if __name__ == "__main__":
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
     parser.add_argument('--hash-password', action='store')
+    parser.add_argument('--reset-slug', action='store')
 
     args = parser.parse_args()
 
@@ -426,10 +427,19 @@ if __name__ == "__main__":
     if args.create_db:
         print('Setting up the database')
         db.create_all()
-        exit(0)
-
-    if args.hash_password is not None:
+    elif args.hash_password is not None:
         print(bcrypt.generate_password_hash(args.hash_password))
-        exit(0)
-
-    app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
+    elif args.reset_slug is not None:
+        post_id = args.reset_slug
+        post = Post.query.get(post_id)
+        if not post:
+            print('No post found with id {}'.format(post_id))
+            exit(1)
+        print('Resetting the slug for post {}'.format(post_id))
+        print('Old slug is "{}"'.format(post.slug))
+        post.slug = post.get_unique_slug(post.title)
+        db.session.add(post)
+        db.session.commit()
+        print('New slug is "{}"'.format(post.slug))
+    else:
+        app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
