@@ -33,6 +33,7 @@ from flask_login import UserMixin, LoginManager, \
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from werkzeug.exceptions import ServiceUnavailable, Unauthorized, NotFound
+from werkzeug.exceptions import BadRequest
 import git
 import gfm
 import markdown
@@ -313,7 +314,9 @@ def edit_post(slug):
         return render_template('edit.html', post=post, config=Config,
                                post_url=url_for('edit_post', slug=post.slug))
 
-    title = request.form['title']
+    title = request.form['title'].strip()
+    if not title or not slugify(title).strip():
+        raise BadRequest("The post's title is invalid.")
     content = request.form['content']
     notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
@@ -358,7 +361,9 @@ def create_new():
         return render_template('edit.html', post=post, config=Config,
                                post_url=url_for('create_new'))
 
-    title = request.form['title']
+    title = request.form['title'].strip()
+    if not title or not slugify(title).strip():
+        raise BadRequest("The post's title is invalid.")
     content = request.form['content']
     notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
