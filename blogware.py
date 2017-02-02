@@ -169,6 +169,10 @@ class Post(db.Model):
         self.summary = self.summarize(value)
 
     @classmethod
+    def get_by_slug(cls, slug):
+        return Post.query.filter_by(slug=slug).first()
+
+    @classmethod
     def get_unique_slug(cls, title):
         slug = slugify(title)
         if Post.query.filter_by(slug=slug).count() > 0:
