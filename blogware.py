@@ -36,6 +36,7 @@ from werkzeug.exceptions import ServiceUnavailable, Unauthorized
 import git
 import gfm
 import markdown
+from slugify import slugify
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -165,6 +166,16 @@ class Post(db.Model):
         value = unicode(value)
         self._content = value
         self.summary = self.summarize(value)
+
+    @classmethod
+    def get_unique_slug(cls, title):
+        slug = slugify(title)
+        if Post.query.filter_by(slug=slug).any():
+            i = 1
+            while Post.query.filter_by(slug=slug).any():
+                slug = slugify('{} {}'.format(title, i))
+                i += 1
+        return slug
 
     @property
     def title(self):
