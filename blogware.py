@@ -309,6 +309,10 @@ def get_post(post_id):
 @login_required
 def edit_post(post_id):
     post = Post.query.get(post_id)
+    if not post:
+        post = Post.get_by_slug(post_id)
+    if not post:
+        raise NotFound()
     if request.method == 'GET':
         return render_template('edit.html', post=post, config=Config,
                                post_url=url_for('edit_post', post_id=post.id))
