@@ -32,10 +32,12 @@ from flask_login import UserMixin, LoginManager, \
     login_user, logout_user, AnonymousUserMixin, current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from werkzeug.exceptions import ServiceUnavailable, Unauthorized
+from werkzeug.exceptions import ServiceUnavailable, Unauthorized, NotFound
+from werkzeug.exceptions import BadRequest
 import git
 import gfm
 import markdown
+from slugify import slugify
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -127,7 +129,8 @@ tags_table = db.Table(
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100))
+    _title = db.Column(db.String(100), name='title')
+    slug = db.Column(db.String(100), index=True, unique=True)
     _content = db.Column(db.Text, name='content')
     summary = db.Column(db.Text)
     notes = db.Column(db.Text)
@@ -151,7 +154,7 @@ class Post(db.Model):
     def summarize(value):
         stripped = re.sub(r'</?[^>]+/?>', '', value)
         cleaned = re.sub(r'[^a-zA-Z01-9,.?!]', ' ', stripped)
-        normalized = re.sub(r'\s*[.,?!]\s*', '\1 ', cleaned)
+        normalized = re.sub(r'\s*([.,?!])\s*', r'\1 ', cleaned)
         condensed = re.sub(r'\s+', ' ', normalized)
         truncated = condensed
         if len(truncated) > 100:
@@ -165,6 +168,30 @@ class Post(db.Model):
         value = unicode(value)
         self._content = value
         self.summary = self.summarize(value)
+
+    @classmethod
+    def get_by_slug(cls, slug):
+        return Post.query.filter_by(slug=slug).first()
+
+    @classmethod
+    def get_unique_slug(cls, title):
+        slug = slugify(title)
+        if Post.query.filter_by(slug=slug).count() > 0:
+            i = 1
+            while Post.query.filter_by(slug=slug).count() > 0:
+                slug = slugify('{} {}'.format(title, i))
+                i += 1
+        return slug
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = value
+        if not self.slug and self._title:
+            self.slug = self.get_unique_slug(self._title)
 
 
 class Tag(db.Model):
@@ -265,25 +292,31 @@ def login():
     return redirect(url_for('index'))
 
 
-@app.route('/post/<post_id>', methods=['GET'])
-def get_post(post_id):
+@app.route('/post/<slug>', methods=['GET'])
+def get_post(slug):
 
-    post = Post.query.get(post_id)
+    post = Post.get_by_slug(slug)
+    if not post:
+        raise NotFound()
     if post.is_draft and not current_user.is_authenticated:
         raise Unauthorized()
     user = current_user
     return render_template('post.html', config=Config, post=post, user=user)
 
 
-@app.route('/edit/<post_id>', methods=['GET', 'POST'])
+@app.route('/edit/<slug>', methods=['GET', 'POST'])
 @login_required
-def edit_post(post_id):
-    post = Post.query.get(post_id)
+def edit_post(slug):
+    post = Post.get_by_slug(slug)
+    if not post:
+        raise NotFound()
     if request.method == 'GET':
         return render_template('edit.html', post=post, config=Config,
-                               post_url=url_for('edit_post', post_id=post.id))
+                               post_url=url_for('edit_post', slug=post.slug))
 
-    title = request.form['title']
+    title = request.form['title'].strip()
+    if not title or not slugify(title).strip():
+        raise BadRequest("The post's title is invalid.")
     content = request.form['content']
     notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
@@ -317,7 +350,7 @@ def edit_post(post_id):
         db.session.add(tta)
     db.session.add(post)
     db.session.commit()
-    return redirect(url_for('get_post', post_id=post_id))
+    return redirect(url_for('get_post', slug=post.slug))
 
 
 @app.route('/new', methods=['GET', 'POST'])
@@ -328,7 +361,9 @@ def create_new():
         return render_template('edit.html', post=post, config=Config,
                                post_url=url_for('create_new'))
 
-    title = request.form['title']
+    title = request.form['title'].strip()
+    if not title or not slugify(title).strip():
+        raise BadRequest("The post's title is invalid.")
     content = request.form['content']
     notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
@@ -352,7 +387,7 @@ def create_new():
 
     db.session.add(post)
     db.session.commit()
-    return redirect(url_for('get_post', post_id=post.id))
+    return redirect(url_for('get_post', slug=post.slug))
 
 
 @app.route('/tags', methods=['GET'])
