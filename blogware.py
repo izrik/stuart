@@ -129,6 +129,7 @@ tags_table = db.Table(
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     _title = db.Column(db.String(100), name='title')
+    slug = db.Column(db.String(100), index=True, unique=True)
     _content = db.Column(db.Text, name='content')
     summary = db.Column(db.Text)
     notes = db.Column(db.Text)
