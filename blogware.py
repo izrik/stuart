@@ -171,9 +171,9 @@ class Post(db.Model):
     @classmethod
     def get_unique_slug(cls, title):
         slug = slugify(title)
-        if Post.query.filter_by(slug=slug).any():
+        if Post.query.filter_by(slug=slug).count() > 0:
             i = 1
-            while Post.query.filter_by(slug=slug).any():
+            while Post.query.filter_by(slug=slug).count() > 0:
                 slug = slugify('{} {}'.format(title, i))
                 i += 1
         return slug
