@@ -185,6 +185,8 @@ class Post(db.Model):
     @title.setter
     def title(self, value):
         self._title = value
+        if not self.slug and self._title:
+            self.slug = self.get_unique_slug(self._title)
 
 
 class Tag(db.Model):
