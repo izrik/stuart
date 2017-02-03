@@ -77,6 +77,7 @@ if __name__ == "__main__":
     parser.add_argument('--reset-slug', action='store')
     parser.add_argument('--set-date', action='store', nargs=2)
     parser.add_argument('--reset-summary', action='store')
+    parser.add_argument('--set-option', action='store', nargs=2)
 
     args = parser.parse_args()
 
@@ -468,5 +469,18 @@ if __name__ == "__main__":
         db.session.add(post)
         db.session.commit()
         print('New summary is "{}"'.format(post.summary))
+    elif args.set_option is not None:
+        name, value = args.set_option
+        option = Option.query.get(name)
+        if option:
+            print('Setting the value for option {}'.format(name))
+            print('Old value is "{}"'.format(option.value))
+            option.value = value
+        else:
+            print('Creating option {}'.format(name))
+            option = Option(name, value)
+        db.session.add(option)
+        db.session.commit()
+        print('New value is "{}"'.format(option.value))
     else:
         app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
