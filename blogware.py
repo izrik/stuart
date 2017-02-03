@@ -78,6 +78,7 @@ if __name__ == "__main__":
     parser.add_argument('--set-date', action='store', nargs=2)
     parser.add_argument('--reset-summary', action='store')
     parser.add_argument('--set-option', action='store', nargs=2)
+    parser.add_argument('--clear-option', action='store')
 
     args = parser.parse_args()
 
@@ -482,5 +483,15 @@ if __name__ == "__main__":
         db.session.add(option)
         db.session.commit()
         print('New value is "{}"'.format(option.value))
+    elif args.clear_option is not None:
+        name = args.clear_option
+        option = Option.query.get(name)
+        if not option:
+            print('No option found with name {}'.format(name))
+            exit(1)
+        print('Clearing option {}'.format(name))
+        print('Old value is "{}"'.format(option.value))
+        db.session.delete(option)
+        db.session.commit()
     else:
         app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
