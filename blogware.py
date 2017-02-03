@@ -38,6 +38,7 @@ import git
 import gfm
 import markdown
 from slugify import slugify
+import dateutil.parser
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -73,6 +74,11 @@ if __name__ == "__main__":
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
     parser.add_argument('--hash-password', action='store')
+    parser.add_argument('--reset-slug', action='store')
+    parser.add_argument('--set-date', action='store', nargs=2)
+    parser.add_argument('--reset-summary', action='store')
+    parser.add_argument('--set-option', action='store', nargs=2)
+    parser.add_argument('--clear-option', action='store')
 
     args = parser.parse_args()
 
@@ -426,10 +432,66 @@ if __name__ == "__main__":
     if args.create_db:
         print('Setting up the database')
         db.create_all()
-        exit(0)
-
-    if args.hash_password is not None:
+    elif args.hash_password is not None:
         print(bcrypt.generate_password_hash(args.hash_password))
-        exit(0)
-
-    app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
+    elif args.reset_slug is not None:
+        post_id = args.reset_slug
+        post = Post.query.get(post_id)
+        if not post:
+            print('No post found with id {}'.format(post_id))
+            exit(1)
+        print('Resetting the slug for post {}'.format(post_id))
+        print('Old slug is "{}"'.format(post.slug))
+        post.slug = post.get_unique_slug(post.title)
+        db.session.add(post)
+        db.session.commit()
+        print('New slug is "{}"'.format(post.slug))
+    elif args.set_date is not None:
+        post_id, new_date = args.set_date
+        post = Post.query.get(post_id)
+        if not post:
+            print('No post found with id {}'.format(post_id))
+            exit(1)
+        print('Setting the date for post {}'.format(post_id))
+        print('Old date is "{}"'.format(post.date))
+        post.date = dateutil.parser.parse(new_date)
+        db.session.add(post)
+        db.session.commit()
+        print('New date is "{}"'.format(post.date))
+    elif args.reset_summary is not None:
+        post_id = args.reset_summary
+        post = Post.query.get(post_id)
+        if not post:
+            print('No post found with id {}'.format(post_id))
+            exit(1)
+        print('Resetting the summary for post {}'.format(post_id))
+        print('Old summary is "{}"'.format(post.summary))
+        post.content = post.content
+        db.session.add(post)
+        db.session.commit()
+        print('New summary is "{}"'.format(post.summary))
+    elif args.set_option is not None:
+        name, value = args.set_option
+        option = Option.query.get(name)
+        if option:
+            print('Setting the value for option {}'.format(name))
+            print('Old value is "{}"'.format(option.value))
+            option.value = value
+        else:
+            print('Creating option {}'.format(name))
+            option = Option(name, value)
+        db.session.add(option)
+        db.session.commit()
+        print('New value is "{}"'.format(option.value))
+    elif args.clear_option is not None:
+        name = args.clear_option
+        option = Option.query.get(name)
+        if not option:
+            print('No option found with name {}'.format(name))
+            exit(1)
+        print('Clearing option {}'.format(name))
+        print('Old value is "{}"'.format(option.value))
+        db.session.delete(option)
+        db.session.commit()
+    else:
+        app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
