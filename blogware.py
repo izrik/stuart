@@ -38,6 +38,7 @@ import git
 import gfm
 import markdown
 from slugify import slugify
+import dateutil.parser
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -74,6 +75,7 @@ if __name__ == "__main__":
     parser.add_argument('--create-db', action='store_true')
     parser.add_argument('--hash-password', action='store')
     parser.add_argument('--reset-slug', action='store')
+    parser.add_argument('--set-date', action='store', nargs=2)
 
     args = parser.parse_args()
 
@@ -441,5 +443,17 @@ if __name__ == "__main__":
         db.session.add(post)
         db.session.commit()
         print('New slug is "{}"'.format(post.slug))
+    elif args.set_date is not None:
+        post_id, new_date = args.set_date
+        post = Post.query.get(post_id)
+        if not post:
+            print('No post found with id {}'.format(post_id))
+            exit(1)
+        print('Setting the date for post {}'.format(post_id))
+        print('Old date is "{}"'.format(post.date))
+        post.date = dateutil.parser.parse(new_date)
+        db.session.add(post)
+        db.session.commit()
+        print('New date is "{}"'.format(post.date))
     else:
         app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
