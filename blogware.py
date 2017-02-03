@@ -76,6 +76,7 @@ if __name__ == "__main__":
     parser.add_argument('--hash-password', action='store')
     parser.add_argument('--reset-slug', action='store')
     parser.add_argument('--set-date', action='store', nargs=2)
+    parser.add_argument('--reset-summary', action='store')
 
     args = parser.parse_args()
 
@@ -455,5 +456,17 @@ if __name__ == "__main__":
         db.session.add(post)
         db.session.commit()
         print('New date is "{}"'.format(post.date))
+    elif args.reset_summary is not None:
+        post_id = args.reset_summary
+        post = Post.query.get(post_id)
+        if not post:
+            print('No post found with id {}'.format(post_id))
+            exit(1)
+        print('Resetting the summary for post {}'.format(post_id))
+        print('Old summary is "{}"'.format(post.summary))
+        post.content = post.content
+        db.session.add(post)
+        db.session.commit()
+        print('New summary is "{}"'.format(post.summary))
     else:
         app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
