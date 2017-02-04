@@ -39,8 +39,13 @@
     </div>
     <hr/>
     {% if post.notes and current_user.is_authenticated %}
-    <div class="post-content">
-        {{ post.notes|gfm }}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Notes</h3>
+        </div>
+        <div class="panel-body">
+            {{ post.notes|gfm }}
+        </div>
     </div>
     <hr/>
     {% endif %}
