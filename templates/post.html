@@ -37,7 +37,7 @@
     <div class="post-content">
         {{ post.content|gfm }}
     </div>
-    <hr/>
+
     {% if post.notes and current_user.is_authenticated %}
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -47,6 +47,7 @@
             {{ post.notes|gfm }}
         </div>
     </div>
+    {% else %}
     <hr/>
     {% endif %}
 
