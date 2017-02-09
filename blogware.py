@@ -354,6 +354,7 @@ def edit_post(slug):
     post.content = content
     post.notes = notes
     post.is_draft = is_draft
+    post.last_updated_date = datetime.now()
 
     current_tags = set(post.tags)
     next_tag_names = set(
