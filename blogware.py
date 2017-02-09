@@ -39,6 +39,7 @@ import gfm
 import markdown
 from slugify import slugify
 import dateutil.parser
+import jinja2
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -54,6 +55,7 @@ class Config(object):
     DB_URI = environ.get('BLOGWARE_DB_URI', 'sqlite:////tmp/blog.db')
     SITENAME = environ.get('BLOGWARE_SITENAME', 'Site Name')
     SITEURL = environ.get('BLOGWARE_SITEURL', 'http://localhost:1177')
+    CUSTOM_TEMPLATES = environ.get('BLOGWARE_CUSTOM_TEMPLATES', None)
 
 
 if __name__ == "__main__":
@@ -70,6 +72,12 @@ if __name__ == "__main__":
                         default=Config.SITENAME, help='')
     parser.add_argument('--siteurl', type=str,
                         default=Config.SITEURL, help='')
+    parser.add_argument('--custom-templates', type=str,
+                        default=Config.CUSTOM_TEMPLATES,
+                        help="The path to a directory on the filesystem from "
+                             "which to load template files. If none is "
+                             "specified, the app's default internal template "
+                             "location will be used.")
 
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
@@ -94,9 +102,16 @@ if __name__ == "__main__":
     Config.DB_URI = args.db_uri
     Config.SITENAME = args.sitename
     Config.SITEURL = args.siteurl
+    Config.CUSTOM_TEMPLATES = args.custom_templates
 
 
 app = Flask(__name__)
+
+if Config.CUSTOM_TEMPLATES:
+    loader = jinja2.ChoiceLoader([
+        jinja2.FileSystemLoader(Config.CUSTOM_TEMPLATES),
+        app.jinja_loader])
+    app.jinja_loader = loader
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config["SECRET_KEY"] = Config.SECRET_KEY  # for WTF-forms and login
@@ -425,6 +440,8 @@ if __name__ == "__main__":
     print('Site url: {}'.format(Config.SITEURL))
     print('Port: {}'.format(Config.PORT))
     print('Debug: {}'.format(Config.DEBUG))
+    if Config.CUSTOM_TEMPLATES:
+        print('Custom template path: {}'.format(Config.CUSTOM_TEMPLATES))
     if Config.DEBUG:
         print('DB URI: {}'.format(Config.DB_URI))
         print('Secret Key: {}'.format(Config.SECRET_KEY))
