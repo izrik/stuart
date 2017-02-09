@@ -156,6 +156,7 @@ class Post(db.Model):
     summary = db.Column(db.Text)
     notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
+    last_updated_date = db.Column(db.DateTime, nullable=False)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
     tags = db.relationship('Tag', secondary=tags_table,
                            backref=db.backref('posts', lazy='dynamic'))
@@ -164,6 +165,7 @@ class Post(db.Model):
         self.title = title
         self.content = content
         self.date = date
+        self.last_updated_date = date
         self.is_draft = is_draft
         self.notes = notes
 
