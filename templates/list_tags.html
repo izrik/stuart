@@ -25,17 +25,20 @@
     {% set index = Options.seq().next %}
     {% set odd_even = Options.cycle(['odd', 'even']).next %}
     {% for tag in tags %}
+        {% if current_user.is_authenticated %}{%
+            set post_count = tag.posts.count()
+        %}{% else %}{%
+            set post_count = tag.posts.filter_by(is_draft=False).count()
+        %}{% endif %}
+        {% if post_count > 0 %}
         <div class="index-tag index-tag-id-{{tag.id}} index-tag-index-{{index()}} index-tag-{{odd_even()}}">
             <a href="{{ url_for('get_tag', tag_id=tag.id) }}">
-                <h1>{{ tag.name }} <small>- {% if current_user.is_authenticated %}{{
-                                                tag.posts.count()
-                                            }}{% else %}{{
-                                                tag.posts.filter_by(is_draft=False).count()
-                                            }}{% endif %} posts</small>
+                <h1>{{ tag.name }} <small>- {{post_count}} posts</small>
                 </h1>
             </a>
             <hr/>
         </div>
+        {% endif %}
     {% else %}
         <p>No tags found</p>
     {% endfor %}
