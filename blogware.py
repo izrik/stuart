@@ -39,6 +39,7 @@ import gfm
 import markdown
 from slugify import slugify
 import dateutil.parser
+import jinja2
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -105,6 +106,12 @@ if __name__ == "__main__":
 
 
 app = Flask(__name__)
+
+if Config.CUSTOM_TEMPLATES:
+    loader = jinja2.ChoiceLoader([
+        jinja2.FileSystemLoader(Config.CUSTOM_TEMPLATES),
+        app.jinja_loader])
+    app.jinja_loader = loader
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config["SECRET_KEY"] = Config.SECRET_KEY  # for WTF-forms and login
