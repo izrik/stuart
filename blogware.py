@@ -85,6 +85,8 @@ if __name__ == "__main__":
     parser.add_argument('--reset-slug', action='store', metavar='POST_ID')
     parser.add_argument('--set-date', action='store', nargs=2,
                         metavar=('POST_ID', 'DATE'))
+    parser.add_argument('--set-last-updated-date', action='store', nargs=2,
+                        metavar=('POST_ID', 'DATE'))
     parser.add_argument('--reset-summary', action='store', metavar='POST_ID')
     parser.add_argument('--set-option', action='store', nargs=2,
                         metavar=('NAME', 'VALUE'))
@@ -479,6 +481,18 @@ if __name__ == "__main__":
         db.session.add(post)
         db.session.commit()
         print('New date is "{}"'.format(post.date))
+    elif args.set_last_updated_date is not None:
+        post_id, new_date = args.set_last_updated_date
+        post = Post.query.get(post_id)
+        if not post:
+            print('No post found with id {}'.format(post_id))
+            exit(1)
+        print('Setting the last updated date for post {}'.format(post_id))
+        print('Old date is "{}"'.format(post.last_updated_date))
+        post.last_updated_date = dateutil.parser.parse(new_date)
+        db.session.add(post)
+        db.session.commit()
+        print('New last updated date is "{}"'.format(post.last_updated_date))
     elif args.reset_summary is not None:
         post_id = args.reset_summary
         post = Post.query.get(post_id)
