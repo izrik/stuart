@@ -529,4 +529,5 @@ if __name__ == "__main__":
         db.session.delete(option)
         db.session.commit()
     else:
-        app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
+        app.run(debug=Config.DEBUG, port=Config.PORT,
+                use_reloader=Config.DEBUG)
