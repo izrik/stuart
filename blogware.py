@@ -81,12 +81,14 @@ if __name__ == "__main__":
 
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
-    parser.add_argument('--hash-password', action='store')
-    parser.add_argument('--reset-slug', action='store')
-    parser.add_argument('--set-date', action='store', nargs=2)
-    parser.add_argument('--reset-summary', action='store')
-    parser.add_argument('--set-option', action='store', nargs=2)
-    parser.add_argument('--clear-option', action='store')
+    parser.add_argument('--hash-password', action='store', metavar='PASSWORD')
+    parser.add_argument('--reset-slug', action='store', metavar='POST_ID')
+    parser.add_argument('--set-date', action='store', nargs=2,
+                        metavar=('POST_ID', 'DATE'))
+    parser.add_argument('--reset-summary', action='store', metavar='POST_ID')
+    parser.add_argument('--set-option', action='store', nargs=2,
+                        metavar=('NAME', 'VALUE'))
+    parser.add_argument('--clear-option', action='store', metavar='NAME')
 
     args = parser.parse_args()
 
