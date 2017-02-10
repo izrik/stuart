@@ -124,6 +124,32 @@ class PostTest(unittest.TestCase):
         # then the post's slug is set
         self.assertEqual('titletitletitle', post.slug)
 
+    def test_init_set_summary_from_content(self):
+        # when a Post is created
+        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+
+        # then the post's summary is set from the content
+        self.assertEqual('content', post.summary)
+
+    def test_init_set_summary_from_content_truncated(self):
+        # when a Post is created from content with length == 100
+        content = '12345678901234567890123456789012345678901234567890' \
+                  '12345678901234567890123456789012345678901234567890'  # 100
+        post = blogware.Post('title', content, datetime(2017, 1, 1))
+
+        # then the post's summary is set from the content without modification
+        self.assertEqual(content, post.summary)
+
+        # when a Post is created from content with length > 100
+        content2 = '12345678901234567890123456789012345678901234567890' \
+                   '123456789012345678901234567890123456789012345678901'  # 101
+        expected = '12345678901234567890123456789012345678901234567890' \
+                   '12345678901234567890123456789012345678901234567890...'
+        post = blogware.Post('title', content2, datetime(2017, 1, 1))
+
+        # then the post's summary is set from the truncated content
+        self.assertEqual(expected, post.summary)
+
 
 def run():
     parser = argparse.ArgumentParser()
