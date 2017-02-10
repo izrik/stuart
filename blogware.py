@@ -81,12 +81,16 @@ if __name__ == "__main__":
 
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
-    parser.add_argument('--hash-password', action='store')
-    parser.add_argument('--reset-slug', action='store')
-    parser.add_argument('--set-date', action='store', nargs=2)
-    parser.add_argument('--reset-summary', action='store')
-    parser.add_argument('--set-option', action='store', nargs=2)
-    parser.add_argument('--clear-option', action='store')
+    parser.add_argument('--hash-password', action='store', metavar='PASSWORD')
+    parser.add_argument('--reset-slug', action='store', metavar='POST_ID')
+    parser.add_argument('--set-date', action='store', nargs=2,
+                        metavar=('POST_ID', 'DATE'))
+    parser.add_argument('--set-last-updated-date', action='store', nargs=2,
+                        metavar=('POST_ID', 'DATE'))
+    parser.add_argument('--reset-summary', action='store', metavar='POST_ID')
+    parser.add_argument('--set-option', action='store', nargs=2,
+                        metavar=('NAME', 'VALUE'))
+    parser.add_argument('--clear-option', action='store', metavar='NAME')
 
     args = parser.parse_args()
 
@@ -156,6 +160,7 @@ class Post(db.Model):
     summary = db.Column(db.Text)
     notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
+    last_updated_date = db.Column(db.DateTime, nullable=False)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
     tags = db.relationship('Tag', secondary=tags_table,
                            backref=db.backref('posts', lazy='dynamic'))
@@ -164,6 +169,7 @@ class Post(db.Model):
         self.title = title
         self.content = content
         self.date = date
+        self.last_updated_date = date
         self.is_draft = is_draft
         self.notes = notes
 
@@ -348,6 +354,7 @@ def edit_post(slug):
     post.content = content
     post.notes = notes
     post.is_draft = is_draft
+    post.last_updated_date = datetime.now()
 
     current_tags = set(post.tags)
     next_tag_names = set(
@@ -475,6 +482,18 @@ if __name__ == "__main__":
         db.session.add(post)
         db.session.commit()
         print('New date is "{}"'.format(post.date))
+    elif args.set_last_updated_date is not None:
+        post_id, new_date = args.set_last_updated_date
+        post = Post.query.get(post_id)
+        if not post:
+            print('No post found with id {}'.format(post_id))
+            exit(1)
+        print('Setting the last updated date for post {}'.format(post_id))
+        print('Old date is "{}"'.format(post.last_updated_date))
+        post.last_updated_date = dateutil.parser.parse(new_date)
+        db.session.add(post)
+        db.session.commit()
+        print('New last updated date is "{}"'.format(post.last_updated_date))
     elif args.reset_summary is not None:
         post_id = args.reset_summary
         post = Post.query.get(post_id)
@@ -511,4 +530,5 @@ if __name__ == "__main__":
         db.session.delete(option)
         db.session.commit()
     else:
-        app.run(debug=Config.DEBUG, port=Config.PORT, use_reloader=Config.DEBUG)
+        app.run(debug=Config.DEBUG, port=Config.PORT,
+                use_reloader=Config.DEBUG)
