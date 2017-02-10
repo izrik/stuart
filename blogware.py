@@ -56,6 +56,7 @@ class Config(object):
     SITENAME = environ.get('BLOGWARE_SITENAME', 'Site Name')
     SITEURL = environ.get('BLOGWARE_SITEURL', 'http://localhost:1177')
     CUSTOM_TEMPLATES = environ.get('BLOGWARE_CUSTOM_TEMPLATES', None)
+    AUTHOR = environ.get('BLOGWARE_AUTHOR', 'The Author')
 
 
 if __name__ == "__main__":
@@ -78,6 +79,10 @@ if __name__ == "__main__":
                              "which to load template files. If none is "
                              "specified, the app's default internal template "
                              "location will be used.")
+    parser.add_argument('--author', type=str, default=Config.AUTHOR,
+                        help='The name of the author of the site. This name '
+                             'will appear in the "Posted by" line on posts, '
+                             'and in the copyright section in the footer.')
 
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
@@ -107,6 +112,7 @@ if __name__ == "__main__":
     Config.SITENAME = args.sitename
     Config.SITEURL = args.siteurl
     Config.CUSTOM_TEMPLATES = args.custom_templates
+    Config.AUTHOR = args.author
 
 
 app = Flask(__name__)
@@ -267,10 +273,14 @@ class Options(object):
 
     cycle = cycle
 
+    @staticmethod
+    def get_author():
+        return Options.get('author', Config.AUTHOR)
+
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User("izrik", "izrik@izrik.com")
+    return User(Options.get_author(), Options.get_author())
 
 
 @app.context_processor
@@ -312,7 +322,7 @@ def login():
         flash('Password is invalid', 'error')
         return redirect(url_for('login'))
 
-    user = User("izrik", "izrik@izrik.com")
+    user = User(Options.get_author(), Options.get_author())
     login_user(user)
     flash('Logged in successfully')
     # return redirect(request.args.get('next_url') or url_for('index'))
