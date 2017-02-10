@@ -338,7 +338,26 @@ def get_post(slug):
     if post.is_draft and not current_user.is_authenticated:
         raise Unauthorized()
     user = current_user
-    return render_template('post.html', config=Config, post=post, user=user)
+
+    if current_user.is_authenticated:
+        next_post = Post.query\
+            .filter(Post.date > post.date)\
+            .order_by(Post.date.asc()).limit(1).first()
+        prev_post = Post.query\
+            .filter(Post.date < post.date)\
+            .order_by(Post.date.desc()).limit(1).first()
+    else:
+        next_post = Post.query\
+            .filter_by(is_draft=False)\
+            .filter(Post.date > post.date)\
+            .order_by(Post.date.asc()).limit(1).first()
+        prev_post = Post.query\
+            .filter_by(is_draft=False)\
+            .filter(Post.date < post.date)\
+            .order_by(Post.date.desc()).limit(1).first()
+
+    return render_template('post.html', config=Config, post=post, user=user,
+                           next_post=next_post, prev_post=prev_post)
 
 
 @app.route('/edit/<slug>', methods=['GET', 'POST'])
