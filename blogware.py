@@ -130,6 +130,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
 # extensions
 login_manager = LoginManager(app)
 db = SQLAlchemy(app)
+app.db = db
 bcrypt = Bcrypt(app)
 
 
