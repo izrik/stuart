@@ -80,6 +80,50 @@ class PostTest(unittest.TestCase):
         # constructor
         self.assertEqual('notes', post.notes)
 
+    def test_init_set_slug_from_simple_title(self):
+        # when a Post with a simple title is created
+        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+
+        # then the post's slug is set
+        self.assertEqual('title', post.slug)
+
+    def test_init_set_slug_from_title_with_spaces(self):
+        # when a Post with a simple title is created
+        post = blogware.Post('title  one', 'content', datetime(2017, 1, 1))
+
+        # then the post's slug is set, with consecutive spaces replaced by a
+        # single hyphen
+        self.assertEqual('title-one', post.slug)
+
+    def test_init_set_slug_from_title_with_leading_spaces(self):
+        # when a Post with a simple title is created
+        post = blogware.Post(' title', 'content', datetime(2017, 1, 1))
+
+        # then the post's slug is set, with leading spaces removed
+        self.assertEqual('title', post.slug)
+
+    def test_init_set_slug_from_title_with_trailing_spaces(self):
+        # when a Post with a simple title is created
+        post = blogware.Post('title ', 'content', datetime(2017, 1, 1))
+
+        # then the post's slug is set, with trailing spaces removed
+        self.assertEqual('title', post.slug)
+
+    def test_init_set_slug_from_title_with_non_word_characters(self):
+        # when a Post with a simple title is created
+        post = blogware.Post('title ! $,()', 'content', datetime(2017, 1, 1))
+
+        # then the post's slug is set, with non-word chars removed
+        self.assertEqual('title', post.slug)
+
+    def test_init_set_slug_from_title_with_upper_case(self):
+        # when a Post with a simple title is created
+        post = blogware.Post('TITLEtitletItLe', 'content',
+                             datetime(2017, 1, 1))
+
+        # then the post's slug is set
+        self.assertEqual('titletitletitle', post.slug)
+
 
 def run():
     parser = argparse.ArgumentParser()
