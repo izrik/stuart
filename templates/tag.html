@@ -33,7 +33,7 @@
             <a href="{{ url_for('get_post', slug=post.slug) }}">
                 <h2>{{ post.title }}{% if post.is_draft%} <small>(Draft)</small>{% endif %}</h2>
             </a>
-            <p>{{ post.date.strftime('%Y-%m-%d') }} - izrik</p>
+            <p>{{ post.date.strftime('%Y-%m-%d') }} - {{ Options.get_author() }}</p>
             <hr/>
         </div>
     {% else %}
