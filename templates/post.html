@@ -61,6 +61,20 @@
             <a href="{{ url_for('edit_post', slug=post.slug) }}">Edit</a>
         </div>
     {% endif %}
+    <nav>
+        <ul class="pager">
+            <li class="previous">
+                <a rel="prev"
+                   {% if prev_post %} href="{{ url_for('get_post', slug=prev_post.slug) }}"{% endif %}
+                    ><span aria-hidden="true">&larr;</span> Older</a>
+            </li>
+            <li class="next">
+                <a rel="next"
+                   {% if next_post %} href="{{ url_for('get_post', slug=next_post.slug) }}"{% endif %}
+                    >Newer <span aria-hidden="true">&rarr;</span></a>
+            </li>
+        </ul>
+    </nav>
 </div>
 
 {% endblock %}
