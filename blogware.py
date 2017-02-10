@@ -273,6 +273,10 @@ class Options(object):
 
     cycle = cycle
 
+    @staticmethod
+    def get_author():
+        return Options.get('author', Config.AUTHOR)
+
 
 @login_manager.user_loader
 def load_user(user_id):
