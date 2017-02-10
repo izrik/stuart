@@ -150,6 +150,12 @@ class PostTest(unittest.TestCase):
         # then the post's summary is set from the truncated content
         self.assertEqual(expected, post.summary)
 
+    def test_init_set_last_updated_date(self):
+        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+
+        # then the post's summary is set from the content without modification
+        self.assertEqual(datetime(2017, 1, 1), post.last_updated_date)
+
 
 def run():
     parser = argparse.ArgumentParser()
