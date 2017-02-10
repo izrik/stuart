@@ -71,7 +71,7 @@
         <small><a href="/login">Login</a></small><br/>
         {% endif %}
         {% block copyright %}
-        <small>Copyright &copy; 2017 by the author.</small><br/>
+        <small>Copyright &copy; 2017 by {{ Options.get_author() }}.</small><br/>
         {% endblock %}
         <small>Powered by <a href="https://github.com/izrik/blogware">blogware</a>.</small><br/>
         <small>Revision: <code>{{ Options.get_revision() }}</code></small>
