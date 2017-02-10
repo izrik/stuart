@@ -56,6 +56,7 @@ class Config(object):
     SITENAME = environ.get('BLOGWARE_SITENAME', 'Site Name')
     SITEURL = environ.get('BLOGWARE_SITEURL', 'http://localhost:1177')
     CUSTOM_TEMPLATES = environ.get('BLOGWARE_CUSTOM_TEMPLATES', None)
+    AUTHOR = environ.get('BLOGWARE_AUTHOR', 'The Author')
 
 
 if __name__ == "__main__":
@@ -78,6 +79,10 @@ if __name__ == "__main__":
                              "which to load template files. If none is "
                              "specified, the app's default internal template "
                              "location will be used.")
+    parser.add_argument('--author', type=str, default=Config.AUTHOR,
+                        help='The name of the author of the site. This name '
+                             'will appear in the "Posted by" line on posts, '
+                             'and in the copyright section in the footer.')
 
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
@@ -107,6 +112,7 @@ if __name__ == "__main__":
     Config.SITENAME = args.sitename
     Config.SITEURL = args.siteurl
     Config.CUSTOM_TEMPLATES = args.custom_templates
+    Config.AUTHOR = args.author
 
 
 app = Flask(__name__)
