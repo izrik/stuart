@@ -280,7 +280,7 @@ class Options(object):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User("izrik", "izrik@izrik.com")
+    return User(Options.get_author(), Options.get_author())
 
 
 @app.context_processor
@@ -322,7 +322,7 @@ def login():
         flash('Password is invalid', 'error')
         return redirect(url_for('login'))
 
-    user = User("izrik", "izrik@izrik.com")
+    user = User(Options.get_author(), Options.get_author())
     login_user(user)
     flash('Logged in successfully')
     # return redirect(request.args.get('next_url') or url_for('index'))
