@@ -212,6 +212,28 @@ class PostTest(unittest.TestCase):
         # then the summarized value is truncated
         self.assertEqual(expected2, result2)
 
+    def test_summary_is_set_when_content_is_set(self):
+        # given
+        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+
+        # when
+        post.content = 'content2'
+
+        # then
+        self.assertEqual('content2', post.summary)
+
+    def test_content_is_not_None(self):
+        # given
+        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+
+        # when
+        post.content = None
+
+        # then
+        self.assertEqual('', post.content)
+        self.assertEqual('', post.summary)
+
+
 
 def run():
     parser = argparse.ArgumentParser()
