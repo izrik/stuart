@@ -18,6 +18,9 @@ class PostTest(unittest.TestCase):
         with app.app_context():
             app.db.create_all()
 
+    def tearDown(self):
+        app.db.session.rollback()
+
     def test_init(self):
         # when a Post is created
         post = blogware.Post('title', 'content', datetime(2017, 1, 1))
@@ -262,6 +265,24 @@ class PostTest(unittest.TestCase):
 
         # then
         self.assertIsNone(result)
+
+    def test_get_unique_slug(self):
+        # when
+        slug = blogware.Post.get_unique_slug('title')
+
+        # then
+        self.assertEqual('title', slug)
+
+    def test_get_unique_slug_not_unique(self):
+        # given a post that already exists
+        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        app.db.session.add(post)
+
+        # when we try to get a slug with the same value
+        slug = blogware.Post.get_unique_slug('title')
+
+        # then it increments a counter and returns the slightly different value
+        self.assertEqual('title-1', slug)
 
 
 def run():
