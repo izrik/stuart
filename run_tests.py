@@ -13,9 +13,10 @@ class PostTest(unittest.TestCase):
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         app.config['TESTING'] = True
-        app.db.create_all()
         self.cl = app.test_client()
         app.testing = True
+        with app.app_context():
+            app.db.create_all()
 
     def test_init(self):
         # when a Post is created
@@ -155,6 +156,61 @@ class PostTest(unittest.TestCase):
 
         # then the post's summary is set from the content without modification
         self.assertEqual(datetime(2017, 1, 1), post.last_updated_date)
+
+    def test_summarize_consecutive_spaces_are_condensed(self):
+        # when
+        result = blogware.Post.summarize('one  two')
+
+        # then
+        self.assertEqual('one two', result)
+
+    def test_summarize_html_tags_are_removed(self):
+        # when
+        result = blogware.Post.summarize('<a href="/">Home</a>')
+
+        # then
+        self.assertEqual('Home', result)
+
+    def test_summarize_punctuation_has_added_space(self):
+        # when
+        result = blogware.Post.summarize('one,two.three?four!five')
+
+        # then
+        self.assertEqual('one, two. three? four! five', result)
+
+    def test_summarize_wordish_chars_are_kept(self):
+        # when
+        result = blogware.Post.summarize('Something,.?!')
+
+        # then
+        self.assertEqual('Something, . ? ! ', result)
+
+    def test_summarize_non_wordish_chars_are_removed(self):
+        # when
+        result = blogware.Post.summarize(
+            'Something :@#$%^&*()[]-_=+[]{}\\|;:\'"/<>')
+
+        # then
+        self.assertEqual('Something ', result)
+
+    def test_summarize_long_values_are_truncated(self):
+        # when a string has length == 100
+        content = '12345678901234567890123456789012345678901234567890' \
+                  '12345678901234567890123456789012345678901234567890'  # 100
+        result = blogware.Post.summarize(content)
+
+        # then the summarized value is the same
+        self.assertEqual(content, result)
+
+        # when a string has length > 100
+        content2 = '12345678901234567890123456789012345678901234567890' \
+                   '123456789012345678901234567890123456789012345678901'  # 101
+        expected2 = '12345678901234567890123456789012345678901234567890' \
+                    '12345678901234567890123456789012345678901234567890...'
+        result2 = blogware.Post.summarize(content2)
+
+        # then the summarized value is truncated
+        self.assertEqual(expected2, result2)
 
 
 def run():
