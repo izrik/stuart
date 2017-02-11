@@ -233,6 +233,35 @@ class PostTest(unittest.TestCase):
         self.assertEqual('', post.content)
         self.assertEqual('', post.summary)
 
+    def test_get_by_slug(self):
+        # given
+        post1 = blogware.Post('title1', 'content1', datetime(2017, 1, 1))
+        post2 = blogware.Post('title2', 'content2', datetime(2017, 1, 1))
+        post3 = blogware.Post('title3', 'content3', datetime(2017, 1, 1))
+        app.db.session.add(post1)
+        app.db.session.add(post2)
+        app.db.session.add(post3)
+
+        # when
+        result = blogware.Post.get_by_slug('title2')
+
+        # then
+        self.assertIs(post2, result)
+
+    def test_get_by_slug_missing(self):
+        # given
+        post1 = blogware.Post('title1', 'content1', datetime(2017, 1, 1))
+        post2 = blogware.Post('title2', 'content2', datetime(2017, 1, 1))
+        post3 = blogware.Post('title3', 'content3', datetime(2017, 1, 1))
+        app.db.session.add(post1)
+        app.db.session.add(post2)
+        app.db.session.add(post3)
+
+        # when
+        result = blogware.Post.get_by_slug('title4')
+
+        # then
+        self.assertIsNone(result)
 
 
 def run():
