@@ -308,6 +308,20 @@ class CreateDbTest(unittest.TestCase):
         self.assertIsNone(blogware.Tag.query.first())
         self.assertIsNone(blogware.Option.query.first())
 
+
+class HashPasswordTest(unittest.TestCase):
+    def test_hash_password(self):
+        # given
+        unhashed_password = '12345'
+
+        # when
+        result = blogware.hash_password(unhashed_password)
+
+        # then
+        self.assertTrue(
+            blogware.bcrypt.check_password_hash(result, unhashed_password))
+
+
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument('--print-log', action='store_true',

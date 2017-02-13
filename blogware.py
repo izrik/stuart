@@ -474,6 +474,10 @@ def create_db():
     db.create_all()
 
 
+def hash_password(unhashed_password):
+    return bcrypt.generate_password_hash(unhashed_password)
+
+
 def run():
     print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
@@ -490,7 +494,7 @@ def run():
         print('Setting up the database')
         create_db()
     elif args.hash_password is not None:
-        print(bcrypt.generate_password_hash(args.hash_password))
+        print(hash_password(args.hash_password))
     elif args.reset_slug is not None:
         post_id = args.reset_slug
         post = Post.query.get(post_id)
