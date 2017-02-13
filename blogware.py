@@ -470,8 +470,11 @@ def logout():
     return redirect("/")
 
 
-def run():
+def create_db():
+    db.create_all()
 
+
+def run():
     print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
     print('Site url: {}'.format(Config.SITEURL))
@@ -485,7 +488,7 @@ def run():
 
     if args.create_db:
         print('Setting up the database')
-        db.create_all()
+        create_db()
     elif args.hash_password is not None:
         print(bcrypt.generate_password_hash(args.hash_password))
     elif args.reset_slug is not None:

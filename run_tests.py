@@ -5,6 +5,8 @@ import argparse
 import logging
 from datetime import datetime
 
+from sqlalchemy.exc import OperationalError
+
 import blogware
 from blogware import app
 
@@ -284,6 +286,27 @@ class PostTest(unittest.TestCase):
         # then it increments a counter and returns the slightly different value
         self.assertEqual('title-1', slug)
 
+
+class CreateDbTest(unittest.TestCase):
+    def test_create_db_command(self):
+        # given an app with uninitialize database
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        app.config['TESTING'] = True
+        self.cl = app.test_client()
+        app.testing = True
+
+        # precondition: the database table have not been created yet
+        self.assertRaises(OperationalError, blogware.Post.query.first)
+        self.assertRaises(OperationalError, blogware.Tag.query.first)
+        self.assertRaises(OperationalError, blogware.Option.query.first)
+
+        # when the create_db function is called
+        blogware.create_db()
+
+        # then the database tables are created
+        self.assertIsNone(blogware.Post.query.first())
+        self.assertIsNone(blogware.Tag.query.first())
+        self.assertIsNone(blogware.Option.query.first())
 
 def run():
     parser = argparse.ArgumentParser()
