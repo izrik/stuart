@@ -478,6 +478,19 @@ def hash_password(unhashed_password):
     return bcrypt.generate_password_hash(unhashed_password)
 
 
+def reset_slug(post_id):
+    post = Post.query.get(post_id)
+    if not post:
+        msg = 'No post found with id {}'.format(post_id)
+        raise NotFound(msg)
+    print('Resetting the slug for post {}'.format(post_id))
+    print('Old slug is "{}"'.format(post.slug))
+    post.slug = post.get_unique_slug(post.title)
+    db.session.add(post)
+    db.session.commit()
+    print('New slug is "{}"'.format(post.slug))
+
+
 def run():
     print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
@@ -496,17 +509,10 @@ def run():
     elif args.hash_password is not None:
         print(hash_password(args.hash_password))
     elif args.reset_slug is not None:
-        post_id = args.reset_slug
-        post = Post.query.get(post_id)
-        if not post:
-            print('No post found with id {}'.format(post_id))
-            exit(1)
-        print('Resetting the slug for post {}'.format(post_id))
-        print('Old slug is "{}"'.format(post.slug))
-        post.slug = post.get_unique_slug(post.title)
-        db.session.add(post)
-        db.session.commit()
-        print('New slug is "{}"'.format(post.slug))
+        try:
+            reset_slug(args.reset_slug)
+        except NotFound as e:
+            print(e.description)
     elif args.set_date is not None:
         post_id, new_date = args.set_date
         post = Post.query.get(post_id)

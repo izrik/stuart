@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 
 from sqlalchemy.exc import OperationalError
+from werkzeug.exceptions import NotFound
 
 import blogware
 from blogware import app
@@ -320,6 +321,52 @@ class HashPasswordTest(unittest.TestCase):
         # then
         self.assertTrue(
             blogware.bcrypt.check_password_hash(result, unhashed_password))
+
+
+class CliCommandsTest(unittest.TestCase):
+    def setUp(self):
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        app.config['TESTING'] = True
+        self.cl = app.test_client()
+        app.testing = True
+        with app.app_context():
+            app.db.create_all()
+
+    def tearDown(self):
+        app.db.session.rollback()
+        app.db.drop_all()
+
+    def test_reset_slug(self):
+        # given a post with a non-standard slug is put into the db
+        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post.slug = 'slug12345'
+        app.db.session.add(post)
+        app.db.session.commit()
+
+        # precondition: the post is in the db
+        self.assertIsNotNone(post.id)
+        post2 = blogware.Post.query.first()
+        self.assertIsNotNone(post2.id)
+        self.assertIs(post2, post)
+
+        # precondition: the post's slug is different from the title
+        self.assertNotEqual('title', post.slug)
+
+        # when the reset_slug function is called
+        blogware.reset_slug(post.id)
+
+        # then the post's slug is changed to match the title (plus
+        # counter, meh)
+        self.assertEqual(post.title, post.slug)
+
+    def test_reset_slug_missing(self):
+        # precondition: no posts are in the db
+        result = blogware.Post.query.first()
+        self.assertIsNone(result)
+
+        # when the function is called with the id of a nonexistent post,
+        # then an exception is thrown
+        self.assertRaises(NotFound, blogware.reset_slug, 1)
 
 
 def run():
