@@ -470,7 +470,7 @@ def logout():
     return redirect("/")
 
 
-if __name__ == "__main__":
+def run():
 
     print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
@@ -562,3 +562,7 @@ if __name__ == "__main__":
     else:
         app.run(debug=Config.DEBUG, port=Config.PORT,
                 use_reloader=Config.DEBUG)
+
+
+if __name__ == "__main__":
+    run()
