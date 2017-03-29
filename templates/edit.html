@@ -22,8 +22,11 @@
 
 {% block head %}
 {{ super() }}
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/css/bootstrap-markdown.min.css"
-      rel="stylesheet"/>
+    {% if Options.should_use_local_resources() %}
+    <link href="/static/bootstrap-markdown.min.css" rel="stylesheet"/>
+    {% else %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/css/bootstrap-markdown.min.css" rel="stylesheet"/>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -48,11 +51,13 @@
 
 {% block endbody %}
     {{ super() }}
+    {% if Options.should_use_local_resources() %}
+    <script type="text/javascript" src="/static/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/static/bootstrap-markdown.min.js"></script>
+    <script type="text/javascript" src="/static/markdown.min.js"></script>
+    {% else %}
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-    <script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/js/bootstrap-markdown.min.js">
-    </script>
-    <script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/markdown.js/0.5.0/markdown.min.js">
-    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/js/bootstrap-markdown.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/markdown.js/0.5.0/markdown.min.js"></script>
+    {% endif %}
 {% endblock %}

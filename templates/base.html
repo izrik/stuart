@@ -19,7 +19,11 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
+    {% if Options.should_use_local_resources() %}
+    <link href="/static/bootstrap.min.css" rel="stylesheet"/>
+    {% else %}
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"/>
+    {% endif %}
     <link href="/static/blogware.css" rel="stylesheet"/>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -79,7 +83,11 @@
     {% endblock %}
 
     {% block endbody %}
+    {% if Options.should_use_local_resources() %}
+    <script type="text/javascript" src="/static/jquery-2.1.4.min.js"></script>
+    {% else %}
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    {% endif %}
     {% endblock endbody %}
 </body>
 </html>

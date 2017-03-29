@@ -278,6 +278,10 @@ class Options(object):
     def get_author():
         return Options.get('author', Config.AUTHOR)
 
+    @staticmethod
+    def should_use_local_resources():
+        return False
+
 
 @login_manager.user_loader
 def load_user(user_id):
