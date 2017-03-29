@@ -24,7 +24,7 @@
     <div class="index-post-list">
         {% if current_user.is_authenticated %}
         <div>
-            <a href="/new"><span class="glyphicon glyphicon-plus"></span>New Post</a>
+            <a class="btn btn-primary" href="/new"><span class="glyphicon glyphicon-plus"></span> New Post</a>
         </div>
         {% endif %}
     {% set index = Options.seq().next %}
@@ -41,6 +41,11 @@
     {% else %}
         <p>No posts found</p>
     {% endfor %}
+    {% if current_user.is_authenticated %}
+    <div>
+        <a class="btn btn-primary" href="/new"><span class="glyphicon glyphicon-plus"></span> New Post</a>
+    </div>
+    {% endif %}
     {% include 'page_links.fragment.html' %}
     </div>
 </div>
