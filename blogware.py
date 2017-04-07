@@ -57,6 +57,7 @@ class Config(object):
     SITEURL = environ.get('BLOGWARE_SITEURL', 'http://localhost:1177')
     CUSTOM_TEMPLATES = environ.get('BLOGWARE_CUSTOM_TEMPLATES', None)
     AUTHOR = environ.get('BLOGWARE_AUTHOR', 'The Author')
+    LOCAL_RESOURCES = environ.get('BLOGWARE_LOCAL_RESOURCES', False)
 
 
 if __name__ == "__main__":
@@ -83,6 +84,10 @@ if __name__ == "__main__":
                         help='The name of the author of the site. This name '
                              'will appear in the "Posted by" line on posts, '
                              'and in the copyright section in the footer.')
+    parser.add_argument('--local-resources', action='store_true',
+                        default=Config.LOCAL_RESOURCES,
+                        help='Use local resources (CSS and JS served from the '
+                             'app instead of from global URLs).')
 
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
@@ -113,6 +118,7 @@ if __name__ == "__main__":
     Config.SITEURL = args.siteurl
     Config.CUSTOM_TEMPLATES = args.custom_templates
     Config.AUTHOR = args.author
+    Config.LOCAL_RESOURCES = args.local_resources
 
 
 app = Flask(__name__)
@@ -280,7 +286,7 @@ class Options(object):
 
     @staticmethod
     def should_use_local_resources():
-        return False
+        return Config.LOCAL_RESOURCES
 
 
 @login_manager.user_loader
@@ -506,6 +512,7 @@ def run():
     if Config.DEBUG:
         print('DB URI: {}'.format(Config.DB_URI))
         print('Secret Key: {}'.format(Config.SECRET_KEY))
+    print('Local Resources: {}'.format(Config.LOCAL_RESOURCES))
 
     if args.create_db:
         print('Setting up the database')
