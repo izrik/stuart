@@ -36,6 +36,11 @@
         <a href="{{ url_for('get_tag', tag_id=tag.id) }}">{{ tag.name }}</a>
         {% endfor %}
     </p>
+    {% if current_user.is_authenticated %}
+        <div>
+            <a class="btn btn-primary" href="{{ url_for('edit_post', slug=post.slug) }}">Edit</a>
+        </div>
+    {% endif %}
     <hr/>
 
     <div class="post-content">
@@ -58,7 +63,7 @@
 
     {% if current_user.is_authenticated %}
         <div>
-            <a href="{{ url_for('edit_post', slug=post.slug) }}">Edit</a>
+            <a class="btn btn-primary" href="{{ url_for('edit_post', slug=post.slug) }}">Edit</a>
         </div>
     {% endif %}
     <nav>
