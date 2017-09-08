@@ -91,3 +91,7 @@ ENV/
 # PyCharm
 .idea
 *.iml
+
+# misc
+_scratch*
+.DS_Store
