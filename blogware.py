@@ -130,6 +130,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
 # extensions
 login_manager = LoginManager(app)
 db = SQLAlchemy(app)
+app.db = db
 bcrypt = Bcrypt(app)
 
 
@@ -469,8 +470,28 @@ def logout():
     return redirect("/")
 
 
-if __name__ == "__main__":
+def create_db():
+    db.create_all()
 
+
+def hash_password(unhashed_password):
+    return bcrypt.generate_password_hash(unhashed_password)
+
+
+def reset_slug(post_id):
+    post = Post.query.get(post_id)
+    if not post:
+        msg = 'No post found with id {}'.format(post_id)
+        raise NotFound(msg)
+    print('Resetting the slug for post {}'.format(post_id))
+    print('Old slug is "{}"'.format(post.slug))
+    post.slug = post.get_unique_slug(post.title)
+    db.session.add(post)
+    db.session.commit()
+    print('New slug is "{}"'.format(post.slug))
+
+
+def run():
     print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
     print('Site url: {}'.format(Config.SITEURL))
@@ -484,21 +505,14 @@ if __name__ == "__main__":
 
     if args.create_db:
         print('Setting up the database')
-        db.create_all()
+        create_db()
     elif args.hash_password is not None:
-        print(bcrypt.generate_password_hash(args.hash_password))
+        print(hash_password(args.hash_password))
     elif args.reset_slug is not None:
-        post_id = args.reset_slug
-        post = Post.query.get(post_id)
-        if not post:
-            print('No post found with id {}'.format(post_id))
-            exit(1)
-        print('Resetting the slug for post {}'.format(post_id))
-        print('Old slug is "{}"'.format(post.slug))
-        post.slug = post.get_unique_slug(post.title)
-        db.session.add(post)
-        db.session.commit()
-        print('New slug is "{}"'.format(post.slug))
+        try:
+            reset_slug(args.reset_slug)
+        except NotFound as e:
+            print(e.description)
     elif args.set_date is not None:
         post_id, new_date = args.set_date
         post = Post.query.get(post_id)
@@ -561,3 +575,7 @@ if __name__ == "__main__":
     else:
         app.run(debug=Config.DEBUG, port=Config.PORT,
                 use_reloader=Config.DEBUG)
+
+
+if __name__ == "__main__":
+    run()
