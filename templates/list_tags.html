@@ -26,14 +26,14 @@
     {% set odd_even = Options.cycle(['odd', 'even']).next %}
     {% for tag in tags %}
         {% if current_user.is_authenticated %}{%
-            set post_count = tag.posts.count()
+            set page_count = tag.pages.count()
         %}{% else %}{%
-            set post_count = tag.posts.filter_by(is_draft=False).count()
+            set page_count = tag.pages.filter_by(is_draft=False).count()
         %}{% endif %}
-        {% if post_count > 0 %}
+        {% if page_count > 0 %}
         <div class="index-tag index-tag-id-{{tag.id}} index-tag-index-{{index()}} index-tag-{{odd_even()}}">
             <a href="{{ url_for('get_tag', tag_id=tag.id) }}">
-                <h1>{{ tag.name }} <small>- {{post_count}} posts</small>
+                <h1>{{ tag.name }} <small>- {{page_count}} pages</small>
                 </h1>
             </a>
             <hr/>
