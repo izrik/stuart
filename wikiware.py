@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 
-# blogware - a python blogging system
+# wikiware - a python wiki system
 # Copyright (C) 2016-2017 izrik
 #
-# This file is a part of blogware.
+# This file is a part of wikiware.
 #
-# Blogware is free software: you can redistribute it and/or modify
+# Wikiware is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Blogware is distributed in the hope that it will be useful,
+# Wikiware is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with blogware.  If not, see <http://www.gnu.org/licenses/>.
+# along with wikiware.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import argparse
@@ -49,16 +49,16 @@ except git.InvalidGitRepositoryError:
 
 
 class Config(object):
-    SECRET_KEY = environ.get('BLOGWARE_SECRET_KEY', 'secret')
-    HOST = environ.get('BLOGWARE_HOST', '127.0.0.1')
-    PORT = environ.get('BLOGWARE_PORT', 1177)
-    DEBUG = environ.get('BLOGWARE_DEBUG', False)
-    DB_URI = environ.get('BLOGWARE_DB_URI', 'sqlite:////tmp/blog.db')
-    SITENAME = environ.get('BLOGWARE_SITENAME', 'Site Name')
-    SITEURL = environ.get('BLOGWARE_SITEURL', 'http://localhost:1177')
-    CUSTOM_TEMPLATES = environ.get('BLOGWARE_CUSTOM_TEMPLATES', None)
-    AUTHOR = environ.get('BLOGWARE_AUTHOR', 'The Author')
-    LOCAL_RESOURCES = environ.get('BLOGWARE_LOCAL_RESOURCES', False)
+    SECRET_KEY = environ.get('WIKIWARE_SECRET_KEY', 'secret')
+    HOST = environ.get('WIKIWARE_HOST', '127.0.0.1')
+    PORT = environ.get('WIKIWARE_PORT', 1177)
+    DEBUG = environ.get('WIKIWARE_DEBUG', False)
+    DB_URI = environ.get('WIKIWARE_DB_URI', 'sqlite:////tmp/wiki.db')
+    SITENAME = environ.get('WIKIWARE_SITENAME', 'Site Name')
+    SITEURL = environ.get('WIKIWARE_SITEURL', 'http://localhost:1177')
+    CUSTOM_TEMPLATES = environ.get('WIKIWARE_CUSTOM_TEMPLATES', None)
+    AUTHOR = environ.get('WIKIWARE_AUTHOR', 'The Author')
+    LOCAL_RESOURCES = environ.get('WIKIWARE_LOCAL_RESOURCES', False)
 
 
 if __name__ == "__main__":

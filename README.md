@@ -1,3 +1,3 @@
-# blogware
-A Python blogging system
-https://github.com/izrik/blogware
+# wikiware
+A Python wiki system
+https://github.com/izrik/wikiware

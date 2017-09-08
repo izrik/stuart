@@ -1,4 +1,4 @@
 #!/bin/bash
 
-coverage run --source=blogware ./run_tests.py "$@" && \
+coverage run --source=wikiware ./run_tests.py "$@" && \
     coverage html

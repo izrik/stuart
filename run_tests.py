@@ -8,8 +8,8 @@ from datetime import datetime
 from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import NotFound
 
-import blogware
-from blogware import app
+import wikiware
+from wikiware import app
 
 
 class PostTest(unittest.TestCase):
@@ -26,7 +26,7 @@ class PostTest(unittest.TestCase):
 
     def test_init(self):
         # when a Post is created
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
 
         # then the title is the same as what was passed to the constructor
         self.assertEqual('title', post.title)
@@ -39,14 +39,14 @@ class PostTest(unittest.TestCase):
 
     def test_init_optional_arg_is_draft(self):
         # when a Post is created
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
 
         # then optional argument "is_draft" have its default value of False
         self.assertFalse(post.is_draft)
 
     def test_init_set_is_draft(self):
         # when a Post is created
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1), True)
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1), True)
 
         # then the is_draft field is the same as what was passed to the
         # constructor
@@ -54,7 +54,7 @@ class PostTest(unittest.TestCase):
 
     def test_init_set_is_draft_named(self):
         # when a Post is created
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1),
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1),
                              is_draft=True)
 
         # then the is_draft field is the same as what was passed to the
@@ -64,14 +64,14 @@ class PostTest(unittest.TestCase):
     def test_init_optional_arg_notes(self):
 
         # when a Post is created
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
 
         # then optional argument "notes" have its default value of None
         self.assertIsNone(post.notes)
 
     def test_init_set_notes(self):
         # when a Post is created
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1), False,
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1), False,
                              'notes')
 
         # then the is_draft field is the same as what was passed to the
@@ -80,7 +80,7 @@ class PostTest(unittest.TestCase):
 
     def test_init_set_notes_named(self):
         # when a Post is created
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1), False,
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1), False,
                              notes='notes')
 
         # then the is_draft field is the same as what was passed to the
@@ -89,14 +89,14 @@ class PostTest(unittest.TestCase):
 
     def test_init_set_slug_from_simple_title(self):
         # when a Post with a simple title is created
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
 
         # then the post's slug is set
         self.assertEqual('title', post.slug)
 
     def test_init_set_slug_from_title_with_spaces(self):
         # when a Post with a simple title is created
-        post = blogware.Post('title  one', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title  one', 'content', datetime(2017, 1, 1))
 
         # then the post's slug is set, with consecutive spaces replaced by a
         # single hyphen
@@ -104,28 +104,28 @@ class PostTest(unittest.TestCase):
 
     def test_init_set_slug_from_title_with_leading_spaces(self):
         # when a Post with a simple title is created
-        post = blogware.Post(' title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post(' title', 'content', datetime(2017, 1, 1))
 
         # then the post's slug is set, with leading spaces removed
         self.assertEqual('title', post.slug)
 
     def test_init_set_slug_from_title_with_trailing_spaces(self):
         # when a Post with a simple title is created
-        post = blogware.Post('title ', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title ', 'content', datetime(2017, 1, 1))
 
         # then the post's slug is set, with trailing spaces removed
         self.assertEqual('title', post.slug)
 
     def test_init_set_slug_from_title_with_non_word_characters(self):
         # when a Post with a simple title is created
-        post = blogware.Post('title ! $,()', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title ! $,()', 'content', datetime(2017, 1, 1))
 
         # then the post's slug is set, with non-word chars removed
         self.assertEqual('title', post.slug)
 
     def test_init_set_slug_from_title_with_upper_case(self):
         # when a Post with a simple title is created
-        post = blogware.Post('TITLEtitletItLe', 'content',
+        post = wikiware.Post('TITLEtitletItLe', 'content',
                              datetime(2017, 1, 1))
 
         # then the post's slug is set
@@ -133,7 +133,7 @@ class PostTest(unittest.TestCase):
 
     def test_init_set_summary_from_content(self):
         # when a Post is created
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
 
         # then the post's summary is set from the content
         self.assertEqual('content', post.summary)
@@ -142,7 +142,7 @@ class PostTest(unittest.TestCase):
         # when a Post is created from content with length == 100
         content = '12345678901234567890123456789012345678901234567890' \
                   '12345678901234567890123456789012345678901234567890'  # 100
-        post = blogware.Post('title', content, datetime(2017, 1, 1))
+        post = wikiware.Post('title', content, datetime(2017, 1, 1))
 
         # then the post's summary is set from the content without modification
         self.assertEqual(content, post.summary)
@@ -152,48 +152,48 @@ class PostTest(unittest.TestCase):
                    '123456789012345678901234567890123456789012345678901'  # 101
         expected = '12345678901234567890123456789012345678901234567890' \
                    '12345678901234567890123456789012345678901234567890...'
-        post = blogware.Post('title', content2, datetime(2017, 1, 1))
+        post = wikiware.Post('title', content2, datetime(2017, 1, 1))
 
         # then the post's summary is set from the truncated content
         self.assertEqual(expected, post.summary)
 
     def test_init_set_last_updated_date(self):
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
 
         # then the post's summary is set from the content without modification
         self.assertEqual(datetime(2017, 1, 1), post.last_updated_date)
 
     def test_summarize_consecutive_spaces_are_condensed(self):
         # when
-        result = blogware.Post.summarize('one  two')
+        result = wikiware.Post.summarize('one  two')
 
         # then
         self.assertEqual('one two', result)
 
     def test_summarize_html_tags_are_removed(self):
         # when
-        result = blogware.Post.summarize('<a href="/">Home</a>')
+        result = wikiware.Post.summarize('<a href="/">Home</a>')
 
         # then
         self.assertEqual('Home', result)
 
     def test_summarize_punctuation_has_added_space(self):
         # when
-        result = blogware.Post.summarize('one,two.three?four!five')
+        result = wikiware.Post.summarize('one,two.three?four!five')
 
         # then
         self.assertEqual('one, two. three? four! five', result)
 
     def test_summarize_wordish_chars_are_kept(self):
         # when
-        result = blogware.Post.summarize('Something,.?!')
+        result = wikiware.Post.summarize('Something,.?!')
 
         # then
         self.assertEqual('Something, . ? ! ', result)
 
     def test_summarize_non_wordish_chars_are_removed(self):
         # when
-        result = blogware.Post.summarize(
+        result = wikiware.Post.summarize(
             'Something :@#$%^&*()[]-_=+[]{}\\|;:\'"/<>')
 
         # then
@@ -203,7 +203,7 @@ class PostTest(unittest.TestCase):
         # when a string has length == 100
         content = '12345678901234567890123456789012345678901234567890' \
                   '12345678901234567890123456789012345678901234567890'  # 100
-        result = blogware.Post.summarize(content)
+        result = wikiware.Post.summarize(content)
 
         # then the summarized value is the same
         self.assertEqual(content, result)
@@ -213,14 +213,14 @@ class PostTest(unittest.TestCase):
                    '123456789012345678901234567890123456789012345678901'  # 101
         expected2 = '12345678901234567890123456789012345678901234567890' \
                     '12345678901234567890123456789012345678901234567890...'
-        result2 = blogware.Post.summarize(content2)
+        result2 = wikiware.Post.summarize(content2)
 
         # then the summarized value is truncated
         self.assertEqual(expected2, result2)
 
     def test_summary_is_set_when_content_is_set(self):
         # given
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
 
         # when
         post.content = 'content2'
@@ -230,7 +230,7 @@ class PostTest(unittest.TestCase):
 
     def test_content_is_not_None(self):
         # given
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
 
         # when
         post.content = None
@@ -241,48 +241,48 @@ class PostTest(unittest.TestCase):
 
     def test_get_by_slug(self):
         # given
-        post1 = blogware.Post('title1', 'content1', datetime(2017, 1, 1))
-        post2 = blogware.Post('title2', 'content2', datetime(2017, 1, 1))
-        post3 = blogware.Post('title3', 'content3', datetime(2017, 1, 1))
+        post1 = wikiware.Post('title1', 'content1', datetime(2017, 1, 1))
+        post2 = wikiware.Post('title2', 'content2', datetime(2017, 1, 1))
+        post3 = wikiware.Post('title3', 'content3', datetime(2017, 1, 1))
         app.db.session.add(post1)
         app.db.session.add(post2)
         app.db.session.add(post3)
 
         # when
-        result = blogware.Post.get_by_slug('title2')
+        result = wikiware.Post.get_by_slug('title2')
 
         # then
         self.assertIs(post2, result)
 
     def test_get_by_slug_missing(self):
         # given
-        post1 = blogware.Post('title1', 'content1', datetime(2017, 1, 1))
-        post2 = blogware.Post('title2', 'content2', datetime(2017, 1, 1))
-        post3 = blogware.Post('title3', 'content3', datetime(2017, 1, 1))
+        post1 = wikiware.Post('title1', 'content1', datetime(2017, 1, 1))
+        post2 = wikiware.Post('title2', 'content2', datetime(2017, 1, 1))
+        post3 = wikiware.Post('title3', 'content3', datetime(2017, 1, 1))
         app.db.session.add(post1)
         app.db.session.add(post2)
         app.db.session.add(post3)
 
         # when
-        result = blogware.Post.get_by_slug('title4')
+        result = wikiware.Post.get_by_slug('title4')
 
         # then
         self.assertIsNone(result)
 
     def test_get_unique_slug(self):
         # when
-        slug = blogware.Post.get_unique_slug('title')
+        slug = wikiware.Post.get_unique_slug('title')
 
         # then
         self.assertEqual('title', slug)
 
     def test_get_unique_slug_not_unique(self):
         # given a post that already exists
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
         app.db.session.add(post)
 
         # when we try to get a slug with the same value
-        slug = blogware.Post.get_unique_slug('title')
+        slug = wikiware.Post.get_unique_slug('title')
 
         # then it increments a counter and returns the slightly different value
         self.assertEqual('title-1', slug)
@@ -297,17 +297,17 @@ class CreateDbTest(unittest.TestCase):
         app.testing = True
 
         # precondition: the database table have not been created yet
-        self.assertRaises(OperationalError, blogware.Post.query.first)
-        self.assertRaises(OperationalError, blogware.Tag.query.first)
-        self.assertRaises(OperationalError, blogware.Option.query.first)
+        self.assertRaises(OperationalError, wikiware.Post.query.first)
+        self.assertRaises(OperationalError, wikiware.Tag.query.first)
+        self.assertRaises(OperationalError, wikiware.Option.query.first)
 
         # when the create_db function is called
-        blogware.create_db()
+        wikiware.create_db()
 
         # then the database tables are created
-        self.assertIsNone(blogware.Post.query.first())
-        self.assertIsNone(blogware.Tag.query.first())
-        self.assertIsNone(blogware.Option.query.first())
+        self.assertIsNone(wikiware.Post.query.first())
+        self.assertIsNone(wikiware.Tag.query.first())
+        self.assertIsNone(wikiware.Option.query.first())
 
 
 class HashPasswordTest(unittest.TestCase):
@@ -316,11 +316,11 @@ class HashPasswordTest(unittest.TestCase):
         unhashed_password = '12345'
 
         # when
-        result = blogware.hash_password(unhashed_password)
+        result = wikiware.hash_password(unhashed_password)
 
         # then
         self.assertTrue(
-            blogware.bcrypt.check_password_hash(result, unhashed_password))
+            wikiware.bcrypt.check_password_hash(result, unhashed_password))
 
 
 class CliCommandsTest(unittest.TestCase):
@@ -338,14 +338,14 @@ class CliCommandsTest(unittest.TestCase):
 
     def test_reset_slug(self):
         # given a post with a non-standard slug is put into the db
-        post = blogware.Post('title', 'content', datetime(2017, 1, 1))
+        post = wikiware.Post('title', 'content', datetime(2017, 1, 1))
         post.slug = 'slug12345'
         app.db.session.add(post)
         app.db.session.commit()
 
         # precondition: the post is in the db
         self.assertIsNotNone(post.id)
-        post2 = blogware.Post.query.first()
+        post2 = wikiware.Post.query.first()
         self.assertIsNotNone(post2.id)
         self.assertIs(post2, post)
 
@@ -353,7 +353,7 @@ class CliCommandsTest(unittest.TestCase):
         self.assertNotEqual('title', post.slug)
 
         # when the reset_slug function is called
-        blogware.reset_slug(post.id)
+        wikiware.reset_slug(post.id)
 
         # then the post's slug is changed to match the title (plus
         # counter, meh)
@@ -361,12 +361,12 @@ class CliCommandsTest(unittest.TestCase):
 
     def test_reset_slug_missing(self):
         # precondition: no posts are in the db
-        result = blogware.Post.query.first()
+        result = wikiware.Post.query.first()
         self.assertIsNone(result)
 
         # when the function is called with the id of a nonexistent post,
         # then an exception is thrown
-        self.assertRaises(NotFound, blogware.reset_slug, 1)
+        self.assertRaises(NotFound, wikiware.reset_slug, 1)
 
 
 def run():
