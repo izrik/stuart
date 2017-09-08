@@ -87,7 +87,7 @@ if __name__ == "__main__":
                              "location will be used.")
     parser.add_argument('--author', type=str, default=Config.AUTHOR,
                         help='The name of the author of the site. This name '
-                             'will appear in the "Posted by" line on posts, '
+                             'will appear in the "Posted by" line on pages, '
                              'and in the copyright section in the footer.')
     parser.add_argument('--local-resources', action='store_true',
                         default=Config.LOCAL_RESOURCES,
@@ -97,12 +97,12 @@ if __name__ == "__main__":
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--create-db', action='store_true')
     parser.add_argument('--hash-password', action='store', metavar='PASSWORD')
-    parser.add_argument('--reset-slug', action='store', metavar='POST_ID')
+    parser.add_argument('--reset-slug', action='store', metavar='PAGE_ID')
     parser.add_argument('--set-date', action='store', nargs=2,
-                        metavar=('POST_ID', 'DATE'))
+                        metavar=('PAGE_ID', 'DATE'))
     parser.add_argument('--set-last-updated-date', action='store', nargs=2,
-                        metavar=('POST_ID', 'DATE'))
-    parser.add_argument('--reset-summary', action='store', metavar='POST_ID')
+                        metavar=('PAGE_ID', 'DATE'))
+    parser.add_argument('--reset-summary', action='store', metavar='PAGE_ID')
     parser.add_argument('--set-option', action='store', nargs=2,
                         metavar=('NAME', 'VALUE'))
     parser.add_argument('--clear-option', action='store', metavar='NAME')
@@ -166,12 +166,12 @@ class Guest(AnonymousUserMixin):
 
 
 tags_table = db.Table(
-    'tags_posts',
+    'tags_pages',
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), index=True),
-    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), index=True))
+    db.Column('page_id', db.Integer, db.ForeignKey('page.id'), index=True))
 
 
-class Post(db.Model):
+class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     _title = db.Column(db.String(100), name='title')
     slug = db.Column(db.String(100), index=True, unique=True)
@@ -182,7 +182,7 @@ class Post(db.Model):
     last_updated_date = db.Column(db.DateTime, nullable=False)
     is_draft = db.Column(db.Boolean, nullable=False, default=False)
     tags = db.relationship('Tag', secondary=tags_table,
-                           backref=db.backref('posts', lazy='dynamic'))
+                           backref=db.backref('pages', lazy='dynamic'))
 
     def __init__(self, title, content, date, is_draft=False, notes=None):
         self.title = title
@@ -217,14 +217,14 @@ class Post(db.Model):
 
     @classmethod
     def get_by_slug(cls, slug):
-        return Post.query.filter_by(slug=slug).first()
+        return Page.query.filter_by(slug=slug).first()
 
     @classmethod
     def get_unique_slug(cls, title):
         slug = slugify(title)
-        if Post.query.filter_by(slug=slug).count() > 0:
+        if Page.query.filter_by(slug=slug).count() > 0:
             i = 1
-            while Post.query.filter_by(slug=slug).count() > 0:
+            while Page.query.filter_by(slug=slug).count() > 0:
                 slug = slugify('{} {}'.format(title, i))
                 i += 1
         return slug
@@ -314,13 +314,13 @@ def render_gfm(s):
 
 @app.route("/")
 def index():
-    query = Post.query
+    query = Page.query
     if not current_user.is_authenticated:
         query = query.filter_by(is_draft=False)
-    query = query.order_by(Post.date.desc())
+    query = query.order_by(Page.date.desc())
     pager = query.paginate()
-    posts = query
-    return render_template("index.html", posts=posts, pager=pager)
+    pages = query
+    return render_template("index.html", pages=pages, pager=pager)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -346,63 +346,63 @@ def login():
     return redirect(url_for('index'))
 
 
-@app.route('/post/<slug>', methods=['GET'])
-def get_post(slug):
+@app.route('/page/<slug>', methods=['GET'])
+def get_page(slug):
 
-    post = Post.get_by_slug(slug)
-    if not post:
+    page = Page.get_by_slug(slug)
+    if not page:
         raise NotFound()
-    if post.is_draft and not current_user.is_authenticated:
+    if page.is_draft and not current_user.is_authenticated:
         raise Unauthorized()
     user = current_user
 
     if current_user.is_authenticated:
-        next_post = Post.query\
-            .filter(Post.date > post.date)\
-            .order_by(Post.date.asc()).limit(1).first()
-        prev_post = Post.query\
-            .filter(Post.date < post.date)\
-            .order_by(Post.date.desc()).limit(1).first()
+        next_page = Page.query\
+            .filter(Page.date > page.date)\
+            .order_by(Page.date.asc()).limit(1).first()
+        prev_page = Page.query\
+            .filter(Page.date < page.date)\
+            .order_by(Page.date.desc()).limit(1).first()
     else:
-        next_post = Post.query\
+        next_page = Page.query\
             .filter_by(is_draft=False)\
-            .filter(Post.date > post.date)\
-            .order_by(Post.date.asc()).limit(1).first()
-        prev_post = Post.query\
+            .filter(Page.date > page.date)\
+            .order_by(Page.date.asc()).limit(1).first()
+        prev_page = Page.query\
             .filter_by(is_draft=False)\
-            .filter(Post.date < post.date)\
-            .order_by(Post.date.desc()).limit(1).first()
+            .filter(Page.date < page.date)\
+            .order_by(Page.date.desc()).limit(1).first()
 
-    return render_template('post.html', config=Config, post=post, user=user,
-                           next_post=next_post, prev_post=prev_post)
+    return render_template('page.html', config=Config, page=page, user=user,
+                           next_page=next_page, prev_page=prev_page)
 
 
 @app.route('/edit/<slug>', methods=['GET', 'POST'])
 @login_required
-def edit_post(slug):
-    post = Post.get_by_slug(slug)
-    if not post:
+def edit_page(slug):
+    page = Page.get_by_slug(slug)
+    if not page:
         raise NotFound()
     if request.method == 'GET':
-        return render_template('edit.html', post=post, config=Config,
-                               post_url=url_for('edit_post', slug=post.slug))
+        return render_template('edit.html', page=page, config=Config,
+                               form_action_url=url_for('edit_page', slug=page.slug))
 
     title = request.form['title'].strip()
     if not title or not slugify(title).strip():
-        raise BadRequest("The post's title is invalid.")
+        raise BadRequest("The page's title is invalid.")
     content = request.form['content']
     notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
                          request.form['is_draft']))
     tags = request.form['tags']
 
-    post.title = title
-    post.content = content
-    post.notes = notes
-    post.is_draft = is_draft
-    post.last_updated_date = datetime.now()
+    page.title = title
+    page.content = content
+    page.notes = notes
+    page.is_draft = is_draft
+    page.last_updated_date = datetime.now()
 
-    current_tags = set(post.tags)
+    current_tags = set(page.tags)
     next_tag_names = set(
         name for name in (
             name.strip() for name in tags.split(',') if name)
@@ -417,34 +417,34 @@ def edit_post(slug):
     tags_to_remove = current_tags.difference(next_tags)
 
     for ttr in tags_to_remove:
-        post.tags.remove(ttr)
-    post.tags.extend(tags_to_add)
+        page.tags.remove(ttr)
+    page.tags.extend(tags_to_add)
 
     for tta in tags_to_add:
         db.session.add(tta)
-    db.session.add(post)
+    db.session.add(page)
     db.session.commit()
-    return redirect(url_for('get_post', slug=post.slug))
+    return redirect(url_for('get_page', slug=page.slug))
 
 
 @app.route('/new', methods=['GET', 'POST'])
 @login_required
 def create_new():
     if request.method == 'GET':
-        post = Post('', '', datetime.now(), True)
-        return render_template('edit.html', post=post, config=Config,
-                               post_url=url_for('create_new'))
+        page = Page('', '', datetime.now(), True)
+        return render_template('edit.html', page=page, config=Config,
+                               form_action_url=url_for('create_new'))
 
     title = request.form['title'].strip()
     if not title or not slugify(title).strip():
-        raise BadRequest("The post's title is invalid.")
+        raise BadRequest("The page's title is invalid.")
     content = request.form['content']
     notes = request.form['notes']
     is_draft = not (not ('is_draft' in request.form and
                          request.form['is_draft']))
     tags = request.form['tags']
 
-    post = Post(title, content, datetime.now(), is_draft, notes)
+    page = Page(title, content, datetime.now(), is_draft, notes)
 
     next_tag_names = set(
         name for name in (
@@ -457,11 +457,11 @@ def create_new():
             tag = Tag(name)
         next_tags.add(tag)
     tags_to_add = next_tags
-    post.tags.extend(tags_to_add)
+    page.tags.extend(tags_to_add)
 
-    db.session.add(post)
+    db.session.add(page)
     db.session.commit()
-    return redirect(url_for('get_post', slug=post.slug))
+    return redirect(url_for('get_page', slug=page.slug))
 
 
 @app.route('/tags', methods=['GET'])
@@ -473,11 +473,11 @@ def list_tags():
 @app.route('/tags/<tag_id>', methods=['GET'])
 def get_tag(tag_id):
     tag = Tag.query.get(tag_id)
-    query = tag.posts
+    query = tag.pages
     if not current_user.is_authenticated:
         query = query.filter_by(is_draft=False)
-    posts = query
-    return render_template("tag.html", tag=tag, posts=posts)
+    pages = query
+    return render_template("tag.html", tag=tag, pages=pages)
 
 
 @app.route("/logout")
@@ -494,17 +494,17 @@ def hash_password(unhashed_password):
     return bcrypt.generate_password_hash(unhashed_password)
 
 
-def reset_slug(post_id):
-    post = Post.query.get(post_id)
-    if not post:
-        msg = 'No post found with id {}'.format(post_id)
+def reset_slug(page_id):
+    page = Page.query.get(page_id)
+    if not page:
+        msg = 'No page found with id {}'.format(page_id)
         raise NotFound(msg)
-    print('Resetting the slug for post {}'.format(post_id))
-    print('Old slug is "{}"'.format(post.slug))
-    post.slug = post.get_unique_slug(post.title)
-    db.session.add(post)
+    print('Resetting the slug for page {}'.format(page_id))
+    print('Old slug is "{}"'.format(page.slug))
+    page.slug = page.get_unique_slug(page.title)
+    db.session.add(page)
     db.session.commit()
-    print('New slug is "{}"'.format(post.slug))
+    print('New slug is "{}"'.format(page.slug))
 
 
 def run():
@@ -532,41 +532,41 @@ def run():
         except NotFound as e:
             print(e.description)
     elif args.set_date is not None:
-        post_id, new_date = args.set_date
-        post = Post.query.get(post_id)
-        if not post:
-            print('No post found with id {}'.format(post_id))
+        page_id, new_date = args.set_date
+        page = Page.query.get(page_id)
+        if not page:
+            print('No page found with id {}'.format(page_id))
             exit(1)
-        print('Setting the date for post {}'.format(post_id))
-        print('Old date is "{}"'.format(post.date))
-        post.date = dateutil.parser.parse(new_date)
-        db.session.add(post)
+        print('Setting the date for page {}'.format(page_id))
+        print('Old date is "{}"'.format(page.date))
+        page.date = dateutil.parser.parse(new_date)
+        db.session.add(page)
         db.session.commit()
-        print('New date is "{}"'.format(post.date))
+        print('New date is "{}"'.format(page.date))
     elif args.set_last_updated_date is not None:
-        post_id, new_date = args.set_last_updated_date
-        post = Post.query.get(post_id)
-        if not post:
-            print('No post found with id {}'.format(post_id))
+        page_id, new_date = args.set_last_updated_date
+        page = Page.query.get(page_id)
+        if not page:
+            print('No page found with id {}'.format(page_id))
             exit(1)
-        print('Setting the last updated date for post {}'.format(post_id))
-        print('Old date is "{}"'.format(post.last_updated_date))
-        post.last_updated_date = dateutil.parser.parse(new_date)
-        db.session.add(post)
+        print('Setting the last updated date for page {}'.format(page_id))
+        print('Old date is "{}"'.format(page.last_updated_date))
+        page.last_updated_date = dateutil.parser.parse(new_date)
+        db.session.add(page)
         db.session.commit()
-        print('New last updated date is "{}"'.format(post.last_updated_date))
+        print('New last updated date is "{}"'.format(page.last_updated_date))
     elif args.reset_summary is not None:
-        post_id = args.reset_summary
-        post = Post.query.get(post_id)
-        if not post:
-            print('No post found with id {}'.format(post_id))
+        page_id = args.reset_summary
+        page = Page.query.get(page_id)
+        if not page:
+            print('No page found with id {}'.format(page_id))
             exit(1)
-        print('Resetting the summary for post {}'.format(post_id))
-        print('Old summary is "{}"'.format(post.summary))
-        post.content = post.content
-        db.session.add(post)
+        print('Resetting the summary for page {}'.format(page_id))
+        print('Old summary is "{}"'.format(page.summary))
+        page.content = page.content
+        db.session.add(page)
         db.session.commit()
-        print('New summary is "{}"'.format(post.summary))
+        print('New summary is "{}"'.format(page.summary))
     elif args.set_option is not None:
         name, value = args.set_option
         option = Option.query.get(name)

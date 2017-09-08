@@ -18,7 +18,7 @@
 #}
 
 {% extends 'base.html' %}
-{% block title %}{{ super() }} - Editing "{{ post.title if post.title != None }}" (ID {{post.id}}){% endblock %}
+{% block title %}{{ super() }} - Editing "{{ page.title if page.title != None }}" (ID {{page.id}}){% endblock %}
 
 {% block head %}
 {{ super() }}
@@ -32,16 +32,16 @@
 {% block content %}
 
 <div class="container">
-    <form action="{{ post_url }}" method="post">
+    <form action="{{ form_action_url }}" method="post">
         <input class="btn btn-default" type="submit" value="Save"/>
         <table>
-            <tr><td>ID</td><td>{{ post.id }}</td></tr>
-            <tr><td>Title</td><td><input type="text" name="title" value="{{ post.title if post.title != None }}" /></td></tr>
-            <tr><td>Content</td><td><textarea name="content" rows="24" cols="80" data-provide="markdown">{{ post.content if post.content != None }}</textarea> </td></tr>
-            <tr><td>Notes</td><td><textarea name="notes" rows="24" cols="80" data-provide="markdown">{{ post.notes if post.notes != None }}</textarea> </td></tr>
-            <tr><td>Date</td><td>{{ post.date if post.date != None }}</td></tr>
-            <tr><td>Is Draft?</td><td><input type="checkbox" name="is_draft" {% if post.is_draft %} checked {% endif %} /></td></tr>
-            <tr><td>Tags</td><td><input type="text" name="tags" value="{%- for tag in post.tags -%}{%- if not loop.first -%},{%-endif-%}{{tag.name}}{%- endfor -%}"></td></tr>
+            <tr><td>ID</td><td>{{ page.id }}</td></tr>
+            <tr><td>Title</td><td><input type="text" name="title" value="{{ page.title if page.title != None }}" /></td></tr>
+            <tr><td>Content</td><td><textarea name="content" rows="24" cols="80" data-provide="markdown">{{ page.content if page.content != None }}</textarea> </td></tr>
+            <tr><td>Notes</td><td><textarea name="notes" rows="24" cols="80" data-provide="markdown">{{ page.notes if page.notes != None }}</textarea> </td></tr>
+            <tr><td>Date</td><td>{{ page.date if page.date != None }}</td></tr>
+            <tr><td>Is Draft?</td><td><input type="checkbox" name="is_draft" {% if page.is_draft %} checked {% endif %} /></td></tr>
+            <tr><td>Tags</td><td><input type="text" name="tags" value="{%- for tag in page.tags -%}{%- if not loop.first -%},{%-endif-%}{{tag.name}}{%- endfor -%}"></td></tr>
         </table>
         <input class="btn btn-default" type="submit" value="Save"/>
     </form>
