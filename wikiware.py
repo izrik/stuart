@@ -51,11 +51,11 @@ except git.InvalidGitRepositoryError:
 class Config(object):
     SECRET_KEY = environ.get('WIKIWARE_SECRET_KEY', 'secret')
     HOST = environ.get('WIKIWARE_HOST', '127.0.0.1')
-    PORT = environ.get('WIKIWARE_PORT', 1177)
+    PORT = environ.get('WIKIWARE_PORT', 2512)
     DEBUG = environ.get('WIKIWARE_DEBUG', False)
     DB_URI = environ.get('WIKIWARE_DB_URI', 'sqlite:////tmp/wiki.db')
     SITENAME = environ.get('WIKIWARE_SITENAME', 'Site Name')
-    SITEURL = environ.get('WIKIWARE_SITEURL', 'http://localhost:1177')
+    SITEURL = environ.get('WIKIWARE_SITEURL', 'http://localhost:2512')
     CUSTOM_TEMPLATES = environ.get('WIKIWARE_CUSTOM_TEMPLATES', None)
     AUTHOR = environ.get('WIKIWARE_AUTHOR', 'The Author')
     LOCAL_RESOURCES = environ.get('WIKIWARE_LOCAL_RESOURCES', False)
