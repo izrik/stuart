@@ -50,6 +50,7 @@ except git.InvalidGitRepositoryError:
 
 class Config(object):
     SECRET_KEY = environ.get('BLOGWARE_SECRET_KEY', 'secret')
+    HOST = environ.get('BLOGWARE_HOST', '127.0.0.1')
     PORT = environ.get('BLOGWARE_PORT', 1177)
     DEBUG = environ.get('BLOGWARE_DEBUG', False)
     DB_URI = environ.get('BLOGWARE_DB_URI', 'sqlite:////tmp/blog.db')
@@ -64,6 +65,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--secret-key', type=str,
                         default=Config.SECRET_KEY, help='')
+    parser.add_argument('--host', type=str, default=Config.HOST,
+                        help='The ip address to listen on. Set to 0.0.0.0 to '
+                             'accept any incoming connections on any network '
+                             'interface. Defaults to 127.0.0.1 for testing.')
     parser.add_argument('--port', type=int, default=Config.PORT,
                         help='')
     parser.add_argument('--debug', action='store_true', help='',
@@ -111,6 +116,7 @@ if __name__ == "__main__":
         exit(0)
 
     Config.SECRET_KEY = args.secret_key
+    Config.HOST = args.host
     Config.PORT = args.port
     Config.DEBUG = args.debug
     Config.DB_URI = args.db_uri
@@ -505,6 +511,7 @@ def run():
     print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
     print('Site url: {}'.format(Config.SITEURL))
+    print('Host: {}'.format(Config.HOST))
     print('Port: {}'.format(Config.PORT))
     print('Debug: {}'.format(Config.DEBUG))
     if Config.CUSTOM_TEMPLATES:
@@ -584,7 +591,7 @@ def run():
         db.session.delete(option)
         db.session.commit()
     else:
-        app.run(debug=Config.DEBUG, port=Config.PORT,
+        app.run(debug=Config.DEBUG, host=Config.HOST, port=Config.PORT,
                 use_reloader=Config.DEBUG)
 
 
