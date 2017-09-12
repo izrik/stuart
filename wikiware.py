@@ -26,10 +26,10 @@ from os import environ
 from datetime import datetime
 import re
 
-from flask import Flask, render_template_string, redirect, render_template, \
-    request, url_for, flash, Markup
-from flask_login import UserMixin, LoginManager, \
-    login_user, logout_user, AnonymousUserMixin, current_user, login_required
+from flask import Flask, redirect, render_template, request, url_for, flash
+from flask import Markup
+from flask_login import UserMixin, LoginManager, login_user, logout_user
+from flask_login import AnonymousUserMixin, current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from werkzeug.exceptions import ServiceUnavailable, Unauthorized, NotFound
@@ -40,6 +40,8 @@ import markdown
 from slugify import slugify
 import dateutil.parser
 import jinja2
+from werkzeug.serving import run_simple
+from werkzeug.wsgi import DispatcherMiddleware
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -55,7 +57,7 @@ class Config(object):
     DEBUG = environ.get('WIKIWARE_DEBUG', False)
     DB_URI = environ.get('WIKIWARE_DB_URI', 'sqlite:////tmp/wiki.db')
     SITENAME = environ.get('WIKIWARE_SITENAME', 'Site Name')
-    SITEURL = environ.get('WIKIWARE_SITEURL', 'http://localhost:2512')
+    PATH_PREFIX = environ.get('WIKIWARE_PATH_PREFIX', '')
     CUSTOM_TEMPLATES = environ.get('WIKIWARE_CUSTOM_TEMPLATES', None)
     AUTHOR = environ.get('WIKIWARE_AUTHOR', 'The Author')
     LOCAL_RESOURCES = environ.get('WIKIWARE_LOCAL_RESOURCES', False)
@@ -77,8 +79,8 @@ if __name__ == "__main__":
                         default=Config.DB_URI)
     parser.add_argument('--sitename', type=str,
                         default=Config.SITENAME, help='')
-    parser.add_argument('--siteurl', type=str,
-                        default=Config.SITEURL, help='')
+    parser.add_argument('--path-prefix', type=str,
+                        default=Config.PATH_PREFIX, help='')
     parser.add_argument('--custom-templates', type=str,
                         default=Config.CUSTOM_TEMPLATES,
                         help="The path to a directory on the filesystem from "
@@ -121,7 +123,7 @@ if __name__ == "__main__":
     Config.DEBUG = args.debug
     Config.DB_URI = args.db_uri
     Config.SITENAME = args.sitename
-    Config.SITEURL = args.siteurl
+    Config.PATH_PREFIX = args.path_prefix
     Config.CUSTOM_TEMPLATES = args.custom_templates
     Config.AUTHOR = args.author
     Config.LOCAL_RESOURCES = args.local_resources
@@ -138,6 +140,7 @@ if Config.CUSTOM_TEMPLATES:
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config["SECRET_KEY"] = Config.SECRET_KEY  # for WTF-forms and login
 app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
+app.config['APPLICATION_ROOT'] = Config.PATH_PREFIX
 
 # extensions
 login_manager = LoginManager(app)
@@ -270,8 +273,8 @@ class Options(object):
         return Options.get('sitename', Config.SITENAME)
 
     @staticmethod
-    def get_siteurl():
-        return Options.get('siteurl', Config.SITEURL)
+    def get_path_prefix():
+        return Options.get('path_prefix', Config.PATH_PREFIX)
 
     @staticmethod
     def get_revision():
@@ -384,8 +387,9 @@ def edit_page(slug):
     if not page:
         raise NotFound()
     if request.method == 'GET':
-        return render_template('edit.html', page=page, config=Config,
-                               form_action_url=url_for('edit_page', slug=page.slug))
+        return render_template(
+            'edit.html', page=page, config=Config,
+            form_action_url=url_for('edit_page', slug=page.slug))
 
     title = request.form['title'].strip()
     if not title or not slugify(title).strip():
@@ -510,7 +514,7 @@ def reset_slug(page_id):
 def run():
     print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
-    print('Site url: {}'.format(Config.SITEURL))
+    print('Path prefix: {}'.format(Config.PATH_PREFIX))
     print('Host: {}'.format(Config.HOST))
     print('Port: {}'.format(Config.PORT))
     print('Debug: {}'.format(Config.DEBUG))
@@ -591,8 +595,17 @@ def run():
         db.session.delete(option)
         db.session.commit()
     else:
-        app.run(debug=Config.DEBUG, host=Config.HOST, port=Config.PORT,
-                use_reloader=Config.DEBUG)
+        if Config.PATH_PREFIX:
+            app2 = DispatcherMiddleware(Flask('Dummy-app'), {
+                Config.PATH_PREFIX: app
+            })
+        else:
+            app2 = app
+
+        run_simple(hostname=Config.HOST, port=Config.PORT,
+                   application=app2,
+                   use_debugger=Config.DEBUG, use_reloader=Config.DEBUG,
+                   passthrough_errors=True)
 
 
 if __name__ == "__main__":

@@ -24,7 +24,6 @@ from os import environ
 import MySQLdb
 
 
-
 class Config(object):
     PASSWORD = environ.get('PASSWORD')
 

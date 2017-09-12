@@ -24,7 +24,7 @@
     <div class="index-page-list">
         {% if current_user.is_authenticated %}
         <div>
-            <a class="btn btn-primary" href="/new"><span class="glyphicon glyphicon-plus"></span> New Page</a>
+            <a class="btn btn-primary" href="{{ url_for('create_new') }}"><span class="glyphicon glyphicon-plus"></span> New Page</a>
         </div>
         {% endif %}
     {% set index = Options.seq().next %}
@@ -43,7 +43,7 @@
     {% endfor %}
     {% if current_user.is_authenticated %}
     <div>
-        <a class="btn btn-primary" href="/new"><span class="glyphicon glyphicon-plus"></span> New Page</a>
+        <a class="btn btn-primary" href="{{ url_for('create_new') }}"><span class="glyphicon glyphicon-plus"></span> New Page</a>
     </div>
     {% endif %}
     {% include 'page_links.fragment.html' %}
