@@ -22,7 +22,7 @@
 {% block content %}
 
 <div class="container">
-    <form action="/login" method="post" class="form-horizontal">
+    <form action="{{ url_for('login') }}" method="post" class="form-horizontal">
         <h2>Login</h2>
         <input type="password" id="password" name="password" class="input-xlarge"
                placeholder="Enter Password" required>
