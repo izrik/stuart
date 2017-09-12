@@ -26,10 +26,10 @@ from os import environ
 from datetime import datetime
 import re
 
-from flask import Flask, render_template_string, redirect, render_template, \
-    request, url_for, flash, Markup
-from flask_login import UserMixin, LoginManager, \
-    login_user, logout_user, AnonymousUserMixin, current_user, login_required
+from flask import Flask, redirect, render_template, request, url_for, flash
+from flask import Markup
+from flask_login import UserMixin, LoginManager, login_user, logout_user
+from flask_login import AnonymousUserMixin, current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from werkzeug.exceptions import ServiceUnavailable, Unauthorized, NotFound
