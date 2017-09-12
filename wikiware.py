@@ -41,6 +41,7 @@ from slugify import slugify
 import dateutil.parser
 import jinja2
 from werkzeug.serving import run_simple
+from werkzeug.wsgi import DispatcherMiddleware
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -612,8 +613,15 @@ def run():
         db.session.delete(option)
         db.session.commit()
     else:
+        if Config.PATH_PREFIX:
+            app2 = DispatcherMiddleware(Flask('Dummy-app'), {
+                Config.PATH_PREFIX: app
+            })
+        else:
+            app2 = app
+
         run_simple(hostname=Config.HOST, port=Config.PORT,
-                   application=app,
+                   application=app2,
                    use_debugger=Config.DEBUG, use_reloader=Config.DEBUG,
                    passthrough_errors=True)
 
