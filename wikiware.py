@@ -40,6 +40,7 @@ import markdown
 from slugify import slugify
 import dateutil.parser
 import jinja2
+from werkzeug.serving import run_simple
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -591,8 +592,10 @@ def run():
         db.session.delete(option)
         db.session.commit()
     else:
-        app.run(debug=Config.DEBUG, host=Config.HOST, port=Config.PORT,
-                use_reloader=Config.DEBUG)
+        run_simple(hostname=Config.HOST, port=Config.PORT,
+                   application=app,
+                   use_debugger=Config.DEBUG, use_reloader=Config.DEBUG,
+                   passthrough_errors=True)
 
 
 if __name__ == "__main__":
