@@ -72,7 +72,7 @@
         {% if current_user.is_authenticated %}
         <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
         {% else %}
-        <small><a href="/login">Login</a></small><br/>
+        <small><a href="{{ url_for('login') }}">Login</a></small><br/>
         {% endif %}
         {% block copyright %}
         <small>Copyright &copy; 2017 by {{ Options.get_author() }}.</small><br/>
