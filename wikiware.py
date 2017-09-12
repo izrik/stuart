@@ -387,8 +387,9 @@ def edit_page(slug):
     if not page:
         raise NotFound()
     if request.method == 'GET':
-        return render_template('edit.html', page=page, config=Config,
-                               form_action_url=url_for('edit_page', slug=page.slug))
+        return render_template(
+            'edit.html', page=page, config=Config,
+            form_action_url=url_for('edit_page', slug=page.slug))
 
     title = request.form['title'].strip()
     if not title or not slugify(title).strip():
