@@ -509,25 +509,6 @@ def reset_slug(page_id):
     db.session.commit()
     print('New slug is "{}"'.format(page.slug))
 
-#
-# class FixScriptName(object):
-#     def __init__(self, app, script_name):
-#         self.app = app
-#         self.script_name = script_name
-#
-#     def __call__(self, environ, start_response):
-#         SCRIPT_NAME = self.script_name
-#
-#         if environ['PATH_INFO'].startswith(SCRIPT_NAME):
-#             environ['PATH_INFO'] = environ['PATH_INFO'][len(SCRIPT_NAME):]
-#             environ['SCRIPT_NAME'] = SCRIPT_NAME
-#             return self.app(environ, start_response)
-#         else:
-#             start_response('404', [('Content-Type', 'text/plain')])
-#             return [
-#                 "This doesn't get served by your FixScriptName "
-#                 "middleware.".encode()]
-
 
 def run():
     print('__revision__: {}'.format(__revision__))
