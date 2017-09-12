@@ -56,7 +56,7 @@ class Config(object):
     DEBUG = environ.get('WIKIWARE_DEBUG', False)
     DB_URI = environ.get('WIKIWARE_DB_URI', 'sqlite:////tmp/wiki.db')
     SITENAME = environ.get('WIKIWARE_SITENAME', 'Site Name')
-    SITEURL = environ.get('WIKIWARE_SITEURL', 'http://localhost:2512')
+    PATH_PREFIX = environ.get('WIKIWARE_PATH_PREFIX', '')
     CUSTOM_TEMPLATES = environ.get('WIKIWARE_CUSTOM_TEMPLATES', None)
     AUTHOR = environ.get('WIKIWARE_AUTHOR', 'The Author')
     LOCAL_RESOURCES = environ.get('WIKIWARE_LOCAL_RESOURCES', False)
@@ -78,8 +78,8 @@ if __name__ == "__main__":
                         default=Config.DB_URI)
     parser.add_argument('--sitename', type=str,
                         default=Config.SITENAME, help='')
-    parser.add_argument('--siteurl', type=str,
-                        default=Config.SITEURL, help='')
+    parser.add_argument('--path-prefix', type=str,
+                        default=Config.PATH_PREFIX, help='')
     parser.add_argument('--custom-templates', type=str,
                         default=Config.CUSTOM_TEMPLATES,
                         help="The path to a directory on the filesystem from "
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     Config.DEBUG = args.debug
     Config.DB_URI = args.db_uri
     Config.SITENAME = args.sitename
-    Config.SITEURL = args.siteurl
+    Config.PATH_PREFIX = args.path_prefix
     Config.CUSTOM_TEMPLATES = args.custom_templates
     Config.AUTHOR = args.author
     Config.LOCAL_RESOURCES = args.local_resources
@@ -139,6 +139,7 @@ if Config.CUSTOM_TEMPLATES:
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config["SECRET_KEY"] = Config.SECRET_KEY  # for WTF-forms and login
 app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
+app.config['APPLICATION_ROOT'] = Config.PATH_PREFIX
 
 # extensions
 login_manager = LoginManager(app)
@@ -271,8 +272,8 @@ class Options(object):
         return Options.get('sitename', Config.SITENAME)
 
     @staticmethod
-    def get_siteurl():
-        return Options.get('siteurl', Config.SITEURL)
+    def get_path_prefix():
+        return Options.get('path_prefix', Config.PATH_PREFIX)
 
     @staticmethod
     def get_revision():
@@ -507,11 +508,30 @@ def reset_slug(page_id):
     db.session.commit()
     print('New slug is "{}"'.format(page.slug))
 
+#
+# class FixScriptName(object):
+#     def __init__(self, app, script_name):
+#         self.app = app
+#         self.script_name = script_name
+#
+#     def __call__(self, environ, start_response):
+#         SCRIPT_NAME = self.script_name
+#
+#         if environ['PATH_INFO'].startswith(SCRIPT_NAME):
+#             environ['PATH_INFO'] = environ['PATH_INFO'][len(SCRIPT_NAME):]
+#             environ['SCRIPT_NAME'] = SCRIPT_NAME
+#             return self.app(environ, start_response)
+#         else:
+#             start_response('404', [('Content-Type', 'text/plain')])
+#             return [
+#                 "This doesn't get served by your FixScriptName "
+#                 "middleware.".encode()]
+
 
 def run():
     print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
-    print('Site url: {}'.format(Config.SITEURL))
+    print('Path prefix: {}'.format(Config.PATH_PREFIX))
     print('Host: {}'.format(Config.HOST))
     print('Port: {}'.format(Config.PORT))
     print('Debug: {}'.format(Config.DEBUG))
