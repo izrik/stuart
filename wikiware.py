@@ -105,6 +105,7 @@ if __name__ == "__main__":
     parser.add_argument('--set-last-updated-date', action='store', nargs=2,
                         metavar=('PAGE_ID', 'DATE'))
     parser.add_argument('--reset-summary', action='store', metavar='PAGE_ID')
+    parser.add_argument('--list-options', action='store_true')
     parser.add_argument('--set-option', action='store', nargs=2,
                         metavar=('NAME', 'VALUE'))
     parser.add_argument('--clear-option', action='store', metavar='NAME')
@@ -571,6 +572,11 @@ def run():
         db.session.add(page)
         db.session.commit()
         print('New summary is "{}"'.format(page.summary))
+    elif args.list_options:
+        print('Options')
+        print('----------')
+        for option in Option.query.order_by(Option.name.asc()):
+            print(option.name)
     elif args.set_option is not None:
         name, value = args.set_option
         option = Option.query.get(name)
