@@ -20,11 +20,11 @@
 <html>
 <head lang="en">
     {% if Options.should_use_local_resources() %}
-    <link href="/static/bootstrap.min.css" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet"/>
     {% else %}
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"/>
     {% endif %}
-    <link href="/static/wikiware.css" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='wikiware.css') }} rel="stylesheet"/>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,7 +84,7 @@
 
     {% block endbody %}
     {% if Options.should_use_local_resources() %}
-    <script type="text/javascript" src="/static/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery-2.1.4.min.js') }}></script>
     {% else %}
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     {% endif %}
