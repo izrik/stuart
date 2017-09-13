@@ -487,7 +487,7 @@ def get_tag(tag_id):
 @app.route("/logout")
 def logout():
     logout_user()
-    return redirect("/")
+    return redirect(url_for('index'))
 
 
 def create_db():
