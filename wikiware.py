@@ -573,10 +573,13 @@ def run():
         db.session.commit()
         print('New summary is "{}"'.format(page.summary))
     elif args.list_options:
+        options = Option.query.order_by(Option.name.asc()).all()
+        maxlen = max(len(opt.name) for opt in options)
         print('Options')
-        print('----------')
-        for option in Option.query.order_by(Option.name.asc()):
-            print(option.name)
+        print('-------')
+        for option in options:
+            print('{:{maxlen}}   {}'.format(option.name, option.value,
+                                            maxlen=maxlen))
     elif args.set_option is not None:
         name, value = args.set_option
         option = Option.query.get(name)
