@@ -105,7 +105,8 @@ if __name__ == "__main__":
     parser.add_argument('--set-last-updated-date', action='store', nargs=2,
                         metavar=('PAGE_ID', 'DATE'))
     parser.add_argument('--reset-summary', action='store', metavar='PAGE_ID')
-    parser.add_argument('--list-options', action='store_true')
+    parser.add_argument('--list-options', action='store', nargs='?',
+                        metavar='SEARCH_TERM', const='')
     parser.add_argument('--set-option', action='store', nargs=2,
                         metavar=('NAME', 'VALUE'))
     parser.add_argument('--clear-option', action='store', metavar='NAME')
@@ -572,14 +573,21 @@ def run():
         db.session.add(page)
         db.session.commit()
         print('New summary is "{}"'.format(page.summary))
-    elif args.list_options:
-        options = Option.query.order_by(Option.name.asc()).all()
-        maxlen = max(len(opt.name) for opt in options)
-        print('Options')
-        print('-------')
-        for option in options:
-            print('{:{maxlen}}   {}'.format(option.name, option.value,
-                                            maxlen=maxlen))
+    elif args.list_options is not None:
+        search_term = '%{}%'.format(args.list_options)
+        query = Option.query.order_by(Option.name.asc())
+        if search_term:
+            query = query.filter(Option.name.like(search_term))
+        options = query.all()
+        if options:
+            maxlen = max(len(opt.name) for opt in options)
+            print('Options')
+            print('-------')
+            for option in options:
+                print('{:{maxlen}}   {}'.format(option.name, option.value,
+                                                maxlen=maxlen))
+        else:
+            print('No options found')
     elif args.set_option is not None:
         name, value = args.set_option
         option = Option.query.get(name)
