@@ -225,6 +225,10 @@ class Page(db.Model):
         return Page.query.filter_by(slug=slug).first()
 
     @classmethod
+    def get_by_title(cls, title):
+        return Page.query.filter_by(title=title).first()
+
+    @classmethod
     def get_unique_slug(cls, title):
         slug = slugify(title)
         if Page.query.filter_by(slug=slug).count() > 0:
@@ -299,6 +303,10 @@ class Options(object):
     def should_use_local_resources():
         return Config.LOCAL_RESOURCES
 
+    @staticmethod
+    def get_main_page():
+        return Options.get('main_page')
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -319,14 +327,15 @@ def render_gfm(s):
 
 @app.route("/")
 def index():
-    query = Page.query
-    if not current_user.is_authenticated:
-        query = query.filter_by(is_draft=False)
-    query = query.order_by(Page.date.desc())
-    pager = query.paginate()
-    pages = query
-    return render_template("index.html", pages=pages, pager=pager,
-                           page_links_endpoint='index')
+
+    page_name = Options.get_main_page()
+    page = Page.get_by_title(page_name)
+    if not page:
+        page = Page.get_by_slug(page_name)
+    if page and page.is_draft and not current_user.is_authenticated:
+        page = None
+    user = current_user
+    return render_template('index.html', config=Config, page=page, user=user)
 
 
 @app.route('/all-pages')
