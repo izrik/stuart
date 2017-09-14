@@ -66,24 +66,6 @@
             <a class="btn btn-primary" href="{{ url_for('edit_page', slug=page.slug) }}">Edit</a>
         </div>
     {% endif %}
-    <nav>
-        <ul class="pager">
-            {% if prev_page %}
-            <li class="previous">
-                <a rel="prev"
-                   {% if prev_page %} href="{{ url_for('get_page', slug=prev_page.slug) }}"{% endif %}
-                    ><span aria-hidden="true">&larr;</span> Older</a>
-            </li>
-            {% endif %}
-            {% if next_page %}
-            <li class="next">
-                <a rel="next"
-                   {% if next_page %} href="{{ url_for('get_page', slug=next_page.slug) }}"{% endif %}
-                    >Newer <span aria-hidden="true">&rarr;</span></a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
 </div>
 
 {% endblock %}
