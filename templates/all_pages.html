@@ -21,7 +21,7 @@
 {% block content %}
 
 <div class="container">
-    <div class="index-page-list">
+    <div class="all-pages-page-list">
         {% if current_user.is_authenticated %}
         <div>
             <a class="btn btn-primary" href="{{ url_for('create_new') }}"><span class="glyphicon glyphicon-plus"></span> New Page</a>
@@ -30,7 +30,7 @@
     {% set index = Options.seq().next %}
     {% set odd_even = Options.cycle(['odd', 'even']).next %}
     {% for page in pager.items %}
-        <div class="index-page index-page-id-{{page.id}} index-page-index-{{index()}} index-page-{{odd_even()}}">
+        <div class="all-pages-page all-pages-page-id-{{page.id}} all-pages-page-index-{{index()}} all-pages-page-{{odd_even()}}">
             <a href="{{ url_for('get_page', slug=page.slug) }}">
                 <h1>{{ page.title }}{% if page.is_draft%} <small>(Draft)</small>{% endif %}</h1>
             </a>
