@@ -303,6 +303,10 @@ class Options(object):
     def should_use_local_resources():
         return Config.LOCAL_RESOURCES
 
+    @staticmethod
+    def get_main_page():
+        return Options.get('main_page')
+
 
 @login_manager.user_loader
 def load_user(user_id):
