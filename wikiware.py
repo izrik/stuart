@@ -333,7 +333,7 @@ def all_pages():
     query = Page.query
     if not current_user.is_authenticated:
         query = query.filter_by(is_draft=False)
-    query = query.order_by(Page.date.desc())
+    query = query.order_by(Page._title.asc())
     pager = query.paginate()
     pages = query
     return render_template("all_pages.html", pages=pages, pager=pager)
