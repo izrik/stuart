@@ -225,6 +225,10 @@ class Page(db.Model):
         return Page.query.filter_by(slug=slug).first()
 
     @classmethod
+    def get_by_title(cls, title):
+        return Page.query.filter_by(title=title).first()
+
+    @classmethod
     def get_unique_slug(cls, title):
         slug = slugify(title)
         if Page.query.filter_by(slug=slug).count() > 0:
