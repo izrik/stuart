@@ -374,25 +374,7 @@ def get_page(slug):
         raise Unauthorized()
     user = current_user
 
-    if current_user.is_authenticated:
-        next_page = Page.query\
-            .filter(Page.date > page.date)\
-            .order_by(Page.date.asc()).limit(1).first()
-        prev_page = Page.query\
-            .filter(Page.date < page.date)\
-            .order_by(Page.date.desc()).limit(1).first()
-    else:
-        next_page = Page.query\
-            .filter_by(is_draft=False)\
-            .filter(Page.date > page.date)\
-            .order_by(Page.date.asc()).limit(1).first()
-        prev_page = Page.query\
-            .filter_by(is_draft=False)\
-            .filter(Page.date < page.date)\
-            .order_by(Page.date.desc()).limit(1).first()
-
-    return render_template('page.html', config=Config, page=page, user=user,
-                           next_page=next_page, prev_page=prev_page)
+    return render_template('page.html', config=Config, page=page, user=user)
 
 
 @app.route('/edit/<slug>', methods=['GET', 'POST'])
