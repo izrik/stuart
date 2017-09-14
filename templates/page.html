@@ -27,7 +27,7 @@
     </a>
     {% set page_date = page.date.strftime('%Y-%m-%d') %}
     {% set page_l_u_date = page.last_updated_date.strftime('%Y-%m-%d') %}
-    <p class="page-author">Pageed by {{ Options.get_author() }} on {{ page_date }}</p>
+    <p class="page-author">Created by {{ Options.get_author() }} on {{ page_date }}</p>
     {% if page_date != page_l_u_date  %}
     <p class="page-date">Last updated on {{ page_l_u_date  }}</p>
     {% endif %}
@@ -66,24 +66,6 @@
             <a class="btn btn-primary" href="{{ url_for('edit_page', slug=page.slug) }}">Edit</a>
         </div>
     {% endif %}
-    <nav>
-        <ul class="pager">
-            {% if prev_page %}
-            <li class="previous">
-                <a rel="prev"
-                   {% if prev_page %} href="{{ url_for('get_page', slug=prev_page.slug) }}"{% endif %}
-                    ><span aria-hidden="true">&larr;</span> Older</a>
-            </li>
-            {% endif %}
-            {% if next_page %}
-            <li class="next">
-                <a rel="next"
-                   {% if next_page %} href="{{ url_for('get_page', slug=next_page.slug) }}"{% endif %}
-                    >Newer <span aria-hidden="true">&rarr;</span></a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
 </div>
 
 {% endblock %}
