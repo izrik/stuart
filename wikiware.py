@@ -327,14 +327,19 @@ def render_gfm(s):
 
 @app.route("/")
 def index():
-    query = Page.query
-    if not current_user.is_authenticated:
-        query = query.filter_by(is_draft=False)
-    query = query.order_by(Page.date.desc())
-    pager = query.paginate()
-    pages = query
-    return render_template("index.html", pages=pages, pager=pager,
-                           page_links_endpoint='index')
+
+    page_name = Options.get_main_page()
+    page = Page.get_by_title(page_name)
+    if not page:
+        page = Page.get_by_slug(page_name)
+    if page and page.is_draft and not current_user.is_authenticated:
+        page = None
+    if page:
+        user = current_user
+        return render_template('page.html', config=Config, page=page,
+                               user=user)
+    else:
+        return render_template('index.html')
 
 
 @app.route('/all-pages')
