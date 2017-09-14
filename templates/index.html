@@ -21,7 +21,54 @@
 {% block content %}
 
 <div class="container">
+    {% if page %}
+    <a href="{{ url_for('get_page', slug=page.slug) }}">
+        <h1 class="page-title">{{ page.title }}{% if page.is_draft%} <small>(Draft)</small>{% endif %}</h1>
+    </a>
+    {% set page_date = page.date.strftime('%Y-%m-%d') %}
+    {% set page_l_u_date = page.last_updated_date.strftime('%Y-%m-%d') %}
+    <p class="page-author">Created by {{ Options.get_author() }} on {{ page_date }}</p>
+    {% if page_date != page_l_u_date  %}
+    <p class="page-date">Last updated on {{ page_l_u_date  }}</p>
+    {% endif %}
+    <p class="page-tags">Tags:
+        {% for tag in page.tags %}
+        <a href="{{ url_for('get_tag', tag_id=tag.id) }}">{{ tag.name }}</a>
+        {% endfor %}
+    </p>
+    {% if current_user.is_authenticated %}
+        <div>
+            <a class="btn btn-primary" href="{{ url_for('edit_page', slug=page.slug) }}">Edit</a>
+        </div>
+    {% endif %}
+    <hr/>
+
+    <div class="page-content">
+        {{ page.content|gfm }}
+    </div>
+
+    {% if page.notes and current_user.is_authenticated %}
+    <p>&nbsp;</p>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Notes</h3>
+        </div>
+        <div class="panel-body">
+            {{ page.notes|gfm }}
+        </div>
+    </div>
+    {% else %}
+    <hr/>
+    {% endif %}
+
+    {% if current_user.is_authenticated %}
+        <div>
+            <a class="btn btn-primary" href="{{ url_for('edit_page', slug=page.slug) }}">Edit</a>
+        </div>
+    {% endif %}
+    {% else %}
     <p>Welcome to the {{Options.get_sitename()}} wiki.</p>
+    {% endif %}
 </div>
 
 {% endblock %}

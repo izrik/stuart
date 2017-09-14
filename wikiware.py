@@ -334,12 +334,8 @@ def index():
         page = Page.get_by_slug(page_name)
     if page and page.is_draft and not current_user.is_authenticated:
         page = None
-    if page:
-        user = current_user
-        return render_template('page.html', config=Config, page=page,
-                               user=user)
-    else:
-        return render_template('index.html')
+    user = current_user
+    return render_template('index.html', config=Config, page=page, user=user)
 
 
 @app.route('/all-pages')
