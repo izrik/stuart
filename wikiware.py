@@ -325,7 +325,20 @@ def index():
     query = query.order_by(Page.date.desc())
     pager = query.paginate()
     pages = query
-    return render_template("index.html", pages=pages, pager=pager)
+    return render_template("index.html", pages=pages, pager=pager,
+                           page_links_endpoint='index')
+
+
+@app.route('/all-pages')
+def all_pages():
+    query = Page.query
+    if not current_user.is_authenticated:
+        query = query.filter_by(is_draft=False)
+    query = query.order_by(Page._title.asc())
+    pager = query.paginate()
+    pages = query
+    return render_template("all_pages.html", pages=pages, pager=pager,
+                           page_links_endpoint='all_pages')
 
 
 @app.route('/login', methods=['GET', 'POST'])

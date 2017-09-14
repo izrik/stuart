@@ -1,0 +1,53 @@
+{# wikiware - a python wiki system
+   Copyright (C) 2016-2017 izrik
+
+   This file is a part of wikiware.
+
+   Wikiware is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   Wikiware is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with wikiware.  If not, see <http://www.gnu.org/licenses/>.
+#}
+
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <div class="all-pages-page-list">
+        {% if current_user.is_authenticated %}
+        <div>
+            <a class="btn btn-primary" href="{{ url_for('create_new') }}"><span class="glyphicon glyphicon-plus"></span> New Page</a>
+        </div>
+        {% endif %}
+    {% set index = Options.seq().next %}
+    {% set odd_even = Options.cycle(['odd', 'even']).next %}
+    {% for page in pager.items %}
+        <div class="all-pages-page all-pages-page-id-{{page.id}} all-pages-page-index-{{index()}} all-pages-page-{{odd_even()}}">
+            <a href="{{ url_for('get_page', slug=page.slug) }}">
+                <h1>{{ page.title }}{% if page.is_draft%} <small>(Draft)</small>{% endif %}</h1>
+            </a>
+            <p>{{ page.date.strftime('%Y-%m-%d') }} - {{ Options.get_author() }}</p>
+            <blockquote>{{ page.summary if page.summary }}</blockquote>
+            <hr/>
+        </div>
+    {% else %}
+        <p>No pages found</p>
+    {% endfor %}
+    {% if current_user.is_authenticated %}
+    <div>
+        <a class="btn btn-primary" href="{{ url_for('create_new') }}"><span class="glyphicon glyphicon-plus"></span> New Page</a>
+    </div>
+    {% endif %}
+    {% include 'page_links.fragment.html' %}
+    </div>
+</div>
+
+{% endblock %}
