@@ -27,7 +27,7 @@
     </a>
     {% set page_date = page.date.strftime('%Y-%m-%d') %}
     {% set page_l_u_date = page.last_updated_date.strftime('%Y-%m-%d') %}
-    <p class="page-author">Pageed by {{ Options.get_author() }} on {{ page_date }}</p>
+    <p class="page-author">Created by {{ Options.get_author() }} on {{ page_date }}</p>
     {% if page_date != page_l_u_date  %}
     <p class="page-date">Last updated on {{ page_l_u_date  }}</p>
     {% endif %}
