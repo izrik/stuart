@@ -21,23 +21,7 @@
 {% block content %}
 
 <div class="container">
-    <div class="index-page-list">
-    {% set index = Options.seq().next %}
-    {% set odd_even = Options.cycle(['odd', 'even']).next %}
-    {% for page in pager.items %}
-        <div class="index-page index-page-id-{{page.id}} index-page-index-{{index()}} index-page-{{odd_even()}}">
-            <a href="{{ url_for('get_page', slug=page.slug) }}">
-                <h1>{{ page.title }}{% if page.is_draft%} <small>(Draft)</small>{% endif %}</h1>
-            </a>
-            <p>{{ page.date.strftime('%Y-%m-%d') }} - {{ Options.get_author() }}</p>
-            <blockquote>{{ page.summary if page.summary }}</blockquote>
-            <hr/>
-        </div>
-    {% else %}
-        <p>No pages found</p>
-    {% endfor %}
-    {% include 'page_links.fragment.html' %}
-    </div>
+    <p>Welcome to the {{Options.get_sitename()}} wiki.</p>
 </div>
 
 {% endblock %}
