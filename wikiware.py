@@ -110,6 +110,9 @@ if __name__ == "__main__":
     parser.add_argument('--set-option', action='store', nargs=2,
                         metavar=('NAME', 'VALUE'))
     parser.add_argument('--clear-option', action='store', metavar='NAME')
+    parser.add_argument('--populate-private', action='store_true',
+                        help='Make sure all is_private fields are populated '
+                             'with the is_draft value.')
 
     args = parser.parse_args()
 
@@ -185,7 +188,10 @@ class Page(db.Model):
     notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
     last_updated_date = db.Column(db.DateTime, nullable=False)
-    is_draft = db.Column(db.Boolean, nullable=False, default=False)
+    _is_draft = db.Column(db.Boolean, nullable=False, default=False,
+                          name='is_draft')
+    _is_private = db.Column(db.Boolean, nullable=False, default=False,
+                          name='is_private')
     tags = db.relationship('Tag', secondary=tags_table,
                            backref=db.backref('pages', lazy='dynamic'))
 
@@ -247,6 +253,24 @@ class Page(db.Model):
         self._title = value
         if not self.slug and self._title:
             self.slug = self.get_unique_slug(self._title)
+
+    @property
+    def is_draft(self):
+        return self._is_draft
+
+    @is_draft.setter
+    def is_draft(self, value):
+        self._is_draft = value
+        self._is_private = value
+
+    @property
+    def is_private(self):
+        return self.is_draft
+
+    @is_private.setter
+    def is_private(self, value):
+        self.is_draft = value
+        self._is_private = value
 
 
 class Tag(db.Model):
@@ -332,7 +356,7 @@ def index():
     page = Page.get_by_title(page_name)
     if not page:
         page = Page.get_by_slug(page_name)
-    if page and page.is_draft and not current_user.is_authenticated:
+    if page and page.is_private and not current_user.is_authenticated:
         page = None
     user = current_user
     return render_template('index.html', config=Config, page=page, user=user)
@@ -379,7 +403,7 @@ def get_page(slug):
     page = Page.get_by_slug(slug)
     if not page:
         raise NotFound()
-    if page.is_draft and not current_user.is_authenticated:
+    if page.is_private and not current_user.is_authenticated:
         raise Unauthorized()
     user = current_user
 
@@ -409,7 +433,7 @@ def edit_page(slug):
     page.title = title
     page.content = content
     page.notes = notes
-    page.is_draft = is_draft
+    page.is_private = is_draft
     page.last_updated_date = datetime.now()
 
     current_tags = set(page.tags)
@@ -614,6 +638,11 @@ def run():
         print('Clearing option {}'.format(name))
         print('Old value is "{}"'.format(option.value))
         db.session.delete(option)
+        db.session.commit()
+    elif args.populate_private:
+        pages = Page.query.all()
+        for page in pages:
+            page._is_private = page.is_draft
         db.session.commit()
     else:
         if Config.PATH_PREFIX:
