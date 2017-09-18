@@ -340,7 +340,7 @@ def index():
     page = Page.get_by_title(page_name)
     if not page:
         page = Page.get_by_slug(page_name)
-    if page and page.is_draft and not current_user.is_authenticated:
+    if page and page.is_private and not current_user.is_authenticated:
         page = None
     user = current_user
     return render_template('index.html', config=Config, page=page, user=user)
@@ -387,7 +387,7 @@ def get_page(slug):
     page = Page.get_by_slug(slug)
     if not page:
         raise NotFound()
-    if page.is_draft and not current_user.is_authenticated:
+    if page.is_private and not current_user.is_authenticated:
         raise Unauthorized()
     user = current_user
 
@@ -417,7 +417,7 @@ def edit_page(slug):
     page.title = title
     page.content = content
     page.notes = notes
-    page.is_draft = is_draft
+    page.is_private = is_draft
     page.last_updated_date = datetime.now()
 
     current_tags = set(page.tags)
