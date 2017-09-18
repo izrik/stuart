@@ -254,7 +254,7 @@ class Page(db.Model):
 
     @is_private.setter
     def is_private(self, value):
-        self.is_private = value
+        self.is_draft = value
 
 
 class Tag(db.Model):
