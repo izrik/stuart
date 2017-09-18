@@ -110,6 +110,9 @@ if __name__ == "__main__":
     parser.add_argument('--set-option', action='store', nargs=2,
                         metavar=('NAME', 'VALUE'))
     parser.add_argument('--clear-option', action='store', metavar='NAME')
+    parser.add_argument('--populate-private', action='store_true',
+                        help='Make sure all is_private fields are populated '
+                             'with the is_draft value.')
 
     args = parser.parse_args()
 
@@ -631,6 +634,11 @@ def run():
         print('Clearing option {}'.format(name))
         print('Old value is "{}"'.format(option.value))
         db.session.delete(option)
+        db.session.commit()
+    elif args.populate_private:
+        pages = Page.query.all()
+        for page in pages:
+            page._is_private = page.is_draft
         db.session.commit()
     else:
         if Config.PATH_PREFIX:
