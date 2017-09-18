@@ -248,6 +248,14 @@ class Page(db.Model):
         if not self.slug and self._title:
             self.slug = self.get_unique_slug(self._title)
 
+    @property
+    def is_private(self):
+        return self.is_draft
+
+    @is_private.setter
+    def is_private(self, value):
+        self.is_private = value
+
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
