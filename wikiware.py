@@ -188,8 +188,6 @@ class Page(db.Model):
     notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
     last_updated_date = db.Column(db.DateTime, nullable=False)
-    _is_draft = db.Column(db.Boolean, nullable=False, default=False,
-                          name='is_draft')
     _is_private = db.Column(db.Boolean, nullable=False, default=False,
                           name='is_private')
     tags = db.relationship('Tag', secondary=tags_table,
@@ -268,7 +266,6 @@ class Page(db.Model):
 
     @is_private.setter
     def is_private(self, value):
-        self._is_draft = value
         self._is_private = value
 
 
