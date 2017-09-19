@@ -23,7 +23,7 @@
 
 <div class="container">
     <a href="{{ url_for('get_page', slug=page.slug) }}">
-        <h1 class="page-title">{{ page.title }}{% if page.is_draft%} <small>(Draft)</small>{% endif %}</h1>
+        <h1 class="page-title">{{ page.title }}{% if page.is_private%} <small>(Private)</small>{% endif %}</h1>
     </a>
     {% set page_date = page.date.strftime('%Y-%m-%d') %}
     {% set page_l_u_date = page.last_updated_date.strftime('%Y-%m-%d') %}

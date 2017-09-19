@@ -195,12 +195,12 @@ class Page(db.Model):
     tags = db.relationship('Tag', secondary=tags_table,
                            backref=db.backref('pages', lazy='dynamic'))
 
-    def __init__(self, title, content, date, is_draft=False, notes=None):
+    def __init__(self, title, content, date, is_private=False, notes=None):
         self.title = title
         self.content = content
         self.date = date
         self.last_updated_date = date
-        self.is_draft = is_draft
+        self.is_private = is_private
         self.notes = notes
 
     @property
@@ -366,7 +366,7 @@ def index():
 def all_pages():
     query = Page.query
     if not current_user.is_authenticated:
-        query = query.filter_by(is_draft=False)
+        query = query.filter_by(is_private=False)
     query = query.order_by(Page._title.asc())
     pager = query.paginate()
     pages = query
@@ -426,14 +426,14 @@ def edit_page(slug):
         raise BadRequest("The page's title is invalid.")
     content = request.form['content']
     notes = request.form['notes']
-    is_draft = not (not ('is_draft' in request.form and
-                         request.form['is_draft']))
+    is_private = not (not ('is_private' in request.form and
+                           request.form['is_private']))
     tags = request.form['tags']
 
     page.title = title
     page.content = content
     page.notes = notes
-    page.is_private = is_draft
+    page.is_private = is_private
     page.last_updated_date = datetime.now()
 
     current_tags = set(page.tags)
@@ -474,11 +474,11 @@ def create_new():
         raise BadRequest("The page's title is invalid.")
     content = request.form['content']
     notes = request.form['notes']
-    is_draft = not (not ('is_draft' in request.form and
-                         request.form['is_draft']))
+    is_private = not (not ('is_private' in request.form and
+                           request.form['is_private']))
     tags = request.form['tags']
 
-    page = Page(title, content, datetime.now(), is_draft, notes)
+    page = Page(title, content, datetime.now(), is_private, notes)
 
     next_tag_names = set(
         name for name in (
@@ -509,7 +509,7 @@ def get_tag(tag_id):
     tag = Tag.query.get(tag_id)
     query = tag.pages
     if not current_user.is_authenticated:
-        query = query.filter_by(is_draft=False)
+        query = query.filter_by(is_private=False)
     pages = query
     return render_template("tag.html", tag=tag, pages=pages)
 
@@ -642,7 +642,7 @@ def run():
     elif args.populate_private:
         pages = Page.query.all()
         for page in pages:
-            page._is_private = page.is_draft
+            page._is_private = page.is_private
         db.session.commit()
     else:
         if Config.PATH_PREFIX:

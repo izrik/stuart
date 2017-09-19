@@ -40,7 +40,7 @@
             <tr><td>Content</td><td><textarea name="content" rows="24" cols="80" data-provide="markdown">{{ page.content if page.content != None }}</textarea> </td></tr>
             <tr><td>Notes</td><td><textarea name="notes" rows="24" cols="80" data-provide="markdown">{{ page.notes if page.notes != None }}</textarea> </td></tr>
             <tr><td>Date</td><td>{{ page.date if page.date != None }}</td></tr>
-            <tr><td>Is Draft?</td><td><input type="checkbox" name="is_draft" {% if page.is_draft %} checked {% endif %} /></td></tr>
+            <tr><td>Is Private?</td><td><input type="checkbox" name="is_private" {% if page.is_private %} checked {% endif %} /></td></tr>
             <tr><td>Tags</td><td><input type="text" name="tags" value="{%- for tag in page.tags -%}{%- if not loop.first -%},{%-endif-%}{{tag.name}}{%- endfor -%}"></td></tr>
         </table>
         <input class="btn btn-default" type="submit" value="Save"/>
