@@ -31,7 +31,7 @@
     {% for page in pages %}
         <div class="index-page index-page-id-{{page.id}} index-page-index-{{index()}} index-page-{{odd_even()}}">
             <a href="{{ url_for('get_page', slug=page.slug) }}">
-                <h2>{{ page.title }}{% if page.is_draft%} <small>(Draft)</small>{% endif %}</h2>
+                <h2>{{ page.title }}{% if page.is_private%} <small>(Private)</small>{% endif %}</h2>
             </a>
             <p>{{ page.date.strftime('%Y-%m-%d') }} - {{ Options.get_author() }}</p>
             <hr/>

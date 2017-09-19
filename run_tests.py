@@ -37,29 +37,29 @@ class PageTest(unittest.TestCase):
         # then the date is the same as what was passed to the constructor
         self.assertEqual(datetime(2017, 1, 1), page.date)
 
-    def test_init_optional_arg_is_draft(self):
+    def test_init_optional_arg_is_private(self):
         # when a Page is created
         page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
 
-        # then optional argument "is_draft" have its default value of False
-        self.assertFalse(page.is_draft)
+        # then optional argument "is_private" have its default value of False
+        self.assertFalse(page.is_private)
 
-    def test_init_set_is_draft(self):
+    def test_init_set_is_private(self):
         # when a Page is created
         page = wikiware.Page('title', 'content', datetime(2017, 1, 1), True)
 
-        # then the is_draft field is the same as what was passed to the
+        # then the is_private field is the same as what was passed to the
         # constructor
-        self.assertTrue(page.is_draft)
+        self.assertTrue(page.is_private)
 
-    def test_init_set_is_draft_named(self):
+    def test_init_set_is_private_named(self):
         # when a Page is created
         page = wikiware.Page('title', 'content', datetime(2017, 1, 1),
-                             is_draft=True)
+                             is_private=True)
 
-        # then the is_draft field is the same as what was passed to the
+        # then the is_private field is the same as what was passed to the
         # constructor
-        self.assertTrue(page.is_draft)
+        self.assertTrue(page.is_private)
 
     def test_init_optional_arg_notes(self):
 
@@ -74,7 +74,7 @@ class PageTest(unittest.TestCase):
         page = wikiware.Page('title', 'content', datetime(2017, 1, 1), False,
                              'notes')
 
-        # then the is_draft field is the same as what was passed to the
+        # then the is_private field is the same as what was passed to the
         # constructor
         self.assertEqual('notes', page.notes)
 
@@ -83,7 +83,7 @@ class PageTest(unittest.TestCase):
         page = wikiware.Page('title', 'content', datetime(2017, 1, 1), False,
                              notes='notes')
 
-        # then the is_draft field is the same as what was passed to the
+        # then the is_private field is the same as what was passed to the
         # constructor
         self.assertEqual('notes', page.notes)
 
