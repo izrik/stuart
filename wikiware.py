@@ -188,8 +188,8 @@ class Page(db.Model):
     notes = db.Column(db.Text)
     date = db.Column(db.DateTime)
     last_updated_date = db.Column(db.DateTime, nullable=False)
-    _is_private = db.Column(db.Boolean, nullable=False, default=False,
-                          name='is_private')
+    is_private = db.Column(db.Boolean, nullable=False, default=False,
+                           name='is_private')
     tags = db.relationship('Tag', secondary=tags_table,
                            backref=db.backref('pages', lazy='dynamic'))
 
@@ -251,14 +251,6 @@ class Page(db.Model):
         self._title = value
         if not self.slug and self._title:
             self.slug = self.get_unique_slug(self._title)
-
-    @property
-    def is_private(self):
-        return self._is_private
-
-    @is_private.setter
-    def is_private(self, value):
-        self._is_private = value
 
 
 class Tag(db.Model):
