@@ -256,20 +256,19 @@ class Page(db.Model):
 
     @property
     def is_draft(self):
-        return self._is_draft
+        return self.is_private
 
     @is_draft.setter
     def is_draft(self, value):
-        self._is_draft = value
-        self._is_private = value
+        self.is_private = value
 
     @property
     def is_private(self):
-        return self.is_draft
+        return self._is_private
 
     @is_private.setter
     def is_private(self, value):
-        self.is_draft = value
+        self._is_draft = value
         self._is_private = value
 
 
