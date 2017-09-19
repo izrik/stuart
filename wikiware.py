@@ -253,14 +253,6 @@ class Page(db.Model):
             self.slug = self.get_unique_slug(self._title)
 
     @property
-    def is_draft(self):
-        return self.is_private
-
-    @is_draft.setter
-    def is_draft(self, value):
-        self.is_private = value
-
-    @property
     def is_private(self):
         return self._is_private
 
