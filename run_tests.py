@@ -8,8 +8,8 @@ from datetime import datetime
 from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import NotFound
 
-import wikiware
-from wikiware import app
+import stuart
+from stuart import app
 
 
 class PageTest(unittest.TestCase):
@@ -26,7 +26,7 @@ class PageTest(unittest.TestCase):
 
     def test_init(self):
         # when a Page is created
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
 
         # then the title is the same as what was passed to the constructor
         self.assertEqual('title', page.title)
@@ -39,14 +39,14 @@ class PageTest(unittest.TestCase):
 
     def test_init_optional_arg_is_private(self):
         # when a Page is created
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
 
         # then optional argument "is_private" have its default value of False
         self.assertFalse(page.is_private)
 
     def test_init_set_is_private(self):
         # when a Page is created
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1), True)
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1), True)
 
         # then the is_private field is the same as what was passed to the
         # constructor
@@ -54,8 +54,8 @@ class PageTest(unittest.TestCase):
 
     def test_init_set_is_private_named(self):
         # when a Page is created
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1),
-                             is_private=True)
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1),
+                           is_private=True)
 
         # then the is_private field is the same as what was passed to the
         # constructor
@@ -64,14 +64,14 @@ class PageTest(unittest.TestCase):
     def test_init_optional_arg_notes(self):
 
         # when a Page is created
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
 
         # then optional argument "notes" have its default value of None
         self.assertIsNone(page.notes)
 
     def test_init_set_notes(self):
         # when a Page is created
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1), False,
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1), False,
                              'notes')
 
         # then the is_private field is the same as what was passed to the
@@ -80,8 +80,8 @@ class PageTest(unittest.TestCase):
 
     def test_init_set_notes_named(self):
         # when a Page is created
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1), False,
-                             notes='notes')
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1), False,
+                           notes='notes')
 
         # then the is_private field is the same as what was passed to the
         # constructor
@@ -89,14 +89,14 @@ class PageTest(unittest.TestCase):
 
     def test_init_set_slug_from_simple_title(self):
         # when a Page with a simple title is created
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
 
         # then the page's slug is set
         self.assertEqual('title', page.slug)
 
     def test_init_set_slug_from_title_with_spaces(self):
         # when a Page with a simple title is created
-        page = wikiware.Page('title  one', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title  one', 'content', datetime(2017, 1, 1))
 
         # then the page's slug is set, with consecutive spaces replaced by a
         # single hyphen
@@ -104,36 +104,36 @@ class PageTest(unittest.TestCase):
 
     def test_init_set_slug_from_title_with_leading_spaces(self):
         # when a Page with a simple title is created
-        page = wikiware.Page(' title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page(' title', 'content', datetime(2017, 1, 1))
 
         # then the page's slug is set, with leading spaces removed
         self.assertEqual('title', page.slug)
 
     def test_init_set_slug_from_title_with_trailing_spaces(self):
         # when a Page with a simple title is created
-        page = wikiware.Page('title ', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title ', 'content', datetime(2017, 1, 1))
 
         # then the page's slug is set, with trailing spaces removed
         self.assertEqual('title', page.slug)
 
     def test_init_set_slug_from_title_with_non_word_characters(self):
         # when a Page with a simple title is created
-        page = wikiware.Page('title ! $,()', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title ! $,()', 'content', datetime(2017, 1, 1))
 
         # then the page's slug is set, with non-word chars removed
         self.assertEqual('title', page.slug)
 
     def test_init_set_slug_from_title_with_upper_case(self):
         # when a Page with a simple title is created
-        page = wikiware.Page('TITLEtitletItLe', 'content',
-                             datetime(2017, 1, 1))
+        page = stuart.Page('TITLEtitletItLe', 'content',
+                           datetime(2017, 1, 1))
 
         # then the page's slug is set
         self.assertEqual('titletitletitle', page.slug)
 
     def test_init_set_summary_from_content(self):
         # when a Page is created
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
 
         # then the page's summary is set from the content
         self.assertEqual('content', page.summary)
@@ -142,7 +142,7 @@ class PageTest(unittest.TestCase):
         # when a Page is created from content with length == 100
         content = '12345678901234567890123456789012345678901234567890' \
                   '12345678901234567890123456789012345678901234567890'  # 100
-        page = wikiware.Page('title', content, datetime(2017, 1, 1))
+        page = stuart.Page('title', content, datetime(2017, 1, 1))
 
         # then the page's summary is set from the content without modification
         self.assertEqual(content, page.summary)
@@ -152,48 +152,48 @@ class PageTest(unittest.TestCase):
                    '123456789012345678901234567890123456789012345678901'  # 101
         expected = '12345678901234567890123456789012345678901234567890' \
                    '12345678901234567890123456789012345678901234567890...'
-        page = wikiware.Page('title', content2, datetime(2017, 1, 1))
+        page = stuart.Page('title', content2, datetime(2017, 1, 1))
 
         # then the page's summary is set from the truncated content
         self.assertEqual(expected, page.summary)
 
     def test_init_set_last_updated_date(self):
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
 
         # then the page's summary is set from the content without modification
         self.assertEqual(datetime(2017, 1, 1), page.last_updated_date)
 
     def test_summarize_consecutive_spaces_are_condensed(self):
         # when
-        result = wikiware.Page.summarize('one  two')
+        result = stuart.Page.summarize('one  two')
 
         # then
         self.assertEqual('one two', result)
 
     def test_summarize_html_tags_are_removed(self):
         # when
-        result = wikiware.Page.summarize('<a href="/">Home</a>')
+        result = stuart.Page.summarize('<a href="/">Home</a>')
 
         # then
         self.assertEqual('Home', result)
 
     def test_summarize_punctuation_has_added_space(self):
         # when
-        result = wikiware.Page.summarize('one,two.three?four!five')
+        result = stuart.Page.summarize('one,two.three?four!five')
 
         # then
         self.assertEqual('one, two. three? four! five', result)
 
     def test_summarize_wordish_chars_are_kept(self):
         # when
-        result = wikiware.Page.summarize('Something,.?!')
+        result = stuart.Page.summarize('Something,.?!')
 
         # then
         self.assertEqual('Something, . ? ! ', result)
 
     def test_summarize_non_wordish_chars_are_removed(self):
         # when
-        result = wikiware.Page.summarize(
+        result = stuart.Page.summarize(
             'Something :@#$%^&*()[]-_=+[]{}\\|;:\'"/<>')
 
         # then
@@ -203,7 +203,7 @@ class PageTest(unittest.TestCase):
         # when a string has length == 100
         content = '12345678901234567890123456789012345678901234567890' \
                   '12345678901234567890123456789012345678901234567890'  # 100
-        result = wikiware.Page.summarize(content)
+        result = stuart.Page.summarize(content)
 
         # then the summarized value is the same
         self.assertEqual(content, result)
@@ -213,14 +213,14 @@ class PageTest(unittest.TestCase):
                    '123456789012345678901234567890123456789012345678901'  # 101
         expected2 = '12345678901234567890123456789012345678901234567890' \
                     '12345678901234567890123456789012345678901234567890...'
-        result2 = wikiware.Page.summarize(content2)
+        result2 = stuart.Page.summarize(content2)
 
         # then the summarized value is truncated
         self.assertEqual(expected2, result2)
 
     def test_summary_is_set_when_content_is_set(self):
         # given
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
 
         # when
         page.content = 'content2'
@@ -230,7 +230,7 @@ class PageTest(unittest.TestCase):
 
     def test_content_is_not_None(self):
         # given
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
 
         # when
         page.content = None
@@ -241,48 +241,48 @@ class PageTest(unittest.TestCase):
 
     def test_get_by_slug(self):
         # given
-        page1 = wikiware.Page('title1', 'content1', datetime(2017, 1, 1))
-        page2 = wikiware.Page('title2', 'content2', datetime(2017, 1, 1))
-        page3 = wikiware.Page('title3', 'content3', datetime(2017, 1, 1))
+        page1 = stuart.Page('title1', 'content1', datetime(2017, 1, 1))
+        page2 = stuart.Page('title2', 'content2', datetime(2017, 1, 1))
+        page3 = stuart.Page('title3', 'content3', datetime(2017, 1, 1))
         app.db.session.add(page1)
         app.db.session.add(page2)
         app.db.session.add(page3)
 
         # when
-        result = wikiware.Page.get_by_slug('title2')
+        result = stuart.Page.get_by_slug('title2')
 
         # then
         self.assertIs(page2, result)
 
     def test_get_by_slug_missing(self):
         # given
-        page1 = wikiware.Page('title1', 'content1', datetime(2017, 1, 1))
-        page2 = wikiware.Page('title2', 'content2', datetime(2017, 1, 1))
-        page3 = wikiware.Page('title3', 'content3', datetime(2017, 1, 1))
+        page1 = stuart.Page('title1', 'content1', datetime(2017, 1, 1))
+        page2 = stuart.Page('title2', 'content2', datetime(2017, 1, 1))
+        page3 = stuart.Page('title3', 'content3', datetime(2017, 1, 1))
         app.db.session.add(page1)
         app.db.session.add(page2)
         app.db.session.add(page3)
 
         # when
-        result = wikiware.Page.get_by_slug('title4')
+        result = stuart.Page.get_by_slug('title4')
 
         # then
         self.assertIsNone(result)
 
     def test_get_unique_slug(self):
         # when
-        slug = wikiware.Page.get_unique_slug('title')
+        slug = stuart.Page.get_unique_slug('title')
 
         # then
         self.assertEqual('title', slug)
 
     def test_get_unique_slug_not_unique(self):
         # given a page that already exists
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
         app.db.session.add(page)
 
         # when we try to get a slug with the same value
-        slug = wikiware.Page.get_unique_slug('title')
+        slug = stuart.Page.get_unique_slug('title')
 
         # then it increments a counter and returns the slightly different value
         self.assertEqual('title-1', slug)
@@ -297,17 +297,17 @@ class CreateDbTest(unittest.TestCase):
         app.testing = True
 
         # precondition: the database table have not been created yet
-        self.assertRaises(OperationalError, wikiware.Page.query.first)
-        self.assertRaises(OperationalError, wikiware.Tag.query.first)
-        self.assertRaises(OperationalError, wikiware.Option.query.first)
+        self.assertRaises(OperationalError, stuart.Page.query.first)
+        self.assertRaises(OperationalError, stuart.Tag.query.first)
+        self.assertRaises(OperationalError, stuart.Option.query.first)
 
         # when the create_db function is called
-        wikiware.create_db()
+        stuart.create_db()
 
         # then the database tables are created
-        self.assertIsNone(wikiware.Page.query.first())
-        self.assertIsNone(wikiware.Tag.query.first())
-        self.assertIsNone(wikiware.Option.query.first())
+        self.assertIsNone(stuart.Page.query.first())
+        self.assertIsNone(stuart.Tag.query.first())
+        self.assertIsNone(stuart.Option.query.first())
 
 
 class HashPasswordTest(unittest.TestCase):
@@ -316,11 +316,11 @@ class HashPasswordTest(unittest.TestCase):
         unhashed_password = '12345'
 
         # when
-        result = wikiware.hash_password(unhashed_password)
+        result = stuart.hash_password(unhashed_password)
 
         # then
         self.assertTrue(
-            wikiware.bcrypt.check_password_hash(result, unhashed_password))
+            stuart.bcrypt.check_password_hash(result, unhashed_password))
 
 
 class CliCommandsTest(unittest.TestCase):
@@ -338,14 +338,14 @@ class CliCommandsTest(unittest.TestCase):
 
     def test_reset_slug(self):
         # given a page with a non-standard slug is put into the db
-        page = wikiware.Page('title', 'content', datetime(2017, 1, 1))
+        page = stuart.Page('title', 'content', datetime(2017, 1, 1))
         page.slug = 'slug12345'
         app.db.session.add(page)
         app.db.session.commit()
 
         # precondition: the page is in the db
         self.assertIsNotNone(page.id)
-        page2 = wikiware.Page.query.first()
+        page2 = stuart.Page.query.first()
         self.assertIsNotNone(page2.id)
         self.assertIs(page2, page)
 
@@ -353,7 +353,7 @@ class CliCommandsTest(unittest.TestCase):
         self.assertNotEqual('title', page.slug)
 
         # when the reset_slug function is called
-        wikiware.reset_slug(page.id)
+        stuart.reset_slug(page.id)
 
         # then the page's slug is changed to match the title (plus
         # counter, meh)
@@ -361,12 +361,12 @@ class CliCommandsTest(unittest.TestCase):
 
     def test_reset_slug_missing(self):
         # precondition: no pages are in the db
-        result = wikiware.Page.query.first()
+        result = stuart.Page.query.first()
         self.assertIsNone(result)
 
         # when the function is called with the id of a nonexistent page,
         # then an exception is thrown
-        self.assertRaises(NotFound, wikiware.reset_slug, 1)
+        self.assertRaises(NotFound, stuart.reset_slug, 1)
 
 
 def run():
