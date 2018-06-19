@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 
-# wikiware - a python wiki system
+# stuart - a python wiki system
 # Copyright (C) 2016-2017 izrik
 #
-# This file is a part of wikiware.
+# This file is a part of stuart.
 #
-# Wikiware is free software: you can redistribute it and/or modify
+# Stuart is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Wikiware is distributed in the hope that it will be useful,
+# Stuart is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with wikiware.  If not, see <http://www.gnu.org/licenses/>.
+# along with stuart.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import argparse
@@ -51,16 +51,16 @@ except git.InvalidGitRepositoryError:
 
 
 class Config(object):
-    SECRET_KEY = environ.get('WIKIWARE_SECRET_KEY', 'secret')
-    HOST = environ.get('WIKIWARE_HOST', '127.0.0.1')
-    PORT = environ.get('WIKIWARE_PORT', 2512)
-    DEBUG = environ.get('WIKIWARE_DEBUG', False)
-    DB_URI = environ.get('WIKIWARE_DB_URI', 'sqlite:////tmp/wiki.db')
-    SITENAME = environ.get('WIKIWARE_SITENAME', 'Site Name')
-    PATH_PREFIX = environ.get('WIKIWARE_PATH_PREFIX', '')
-    CUSTOM_TEMPLATES = environ.get('WIKIWARE_CUSTOM_TEMPLATES', None)
-    AUTHOR = environ.get('WIKIWARE_AUTHOR', 'The Author')
-    LOCAL_RESOURCES = environ.get('WIKIWARE_LOCAL_RESOURCES', False)
+    SECRET_KEY = environ.get('STUART_SECRET_KEY', 'secret')
+    HOST = environ.get('STUART_HOST', '127.0.0.1')
+    PORT = environ.get('STUART_PORT', 2512)
+    DEBUG = environ.get('STUART_DEBUG', False)
+    DB_URI = environ.get('STUART_DB_URI', 'sqlite:////tmp/wiki.db')
+    SITENAME = environ.get('STUART_SITENAME', 'Site Name')
+    PATH_PREFIX = environ.get('STUART_PATH_PREFIX', '')
+    CUSTOM_TEMPLATES = environ.get('STUART_CUSTOM_TEMPLATES', None)
+    AUTHOR = environ.get('STUART_AUTHOR', 'The Author')
+    LOCAL_RESOURCES = environ.get('STUART_LOCAL_RESOURCES', False)
 
 
 if __name__ == "__main__":

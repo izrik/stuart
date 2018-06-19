@@ -1,20 +1,20 @@
-{# wikiware - a python wiki system
+{# stuart - a python wiki system
    Copyright (C) 2016-2017 izrik
 
-   This file is a part of wikiware.
+   This file is a part of stuart.
 
-   Wikiware is free software: you can redistribute it and/or modify
+   Stuart is free software: you can redistribute it and/or modify
    it under the terms of the GNU Affero General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
-   Wikiware is distributed in the hope that it will be useful,
+   Stuart is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Affero General Public License for more details.
 
    You should have received a copy of the GNU Affero General Public License
-   along with wikiware.  If not, see <http://www.gnu.org/licenses/>.
+   along with stuart.  If not, see <http://www.gnu.org/licenses/>.
 #}
 <!DOCTYPE html>
 <html>
@@ -24,7 +24,7 @@
     {% else %}
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"/>
     {% endif %}
-    <link href="{{ url_for('static', filename='wikiware.css') }}" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='stuart.css') }}" rel="stylesheet"/>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -89,7 +89,7 @@
         {% block copyright %}
         <small>Copyright &copy; 2017 by {{ Options.get_author() }}.</small><br/>
         {% endblock %}
-        <small>Powered by <a href="https://github.com/izrik/wikiware">wikiware</a>.</small><br/>
+        <small>Powered by <a href="https://github.com/izrik/stuart">stuart</a>.</small><br/>
         <small>Revision: <code>{{ Options.get_revision() }}</code></small>
     </div>
     {% endblock %}
