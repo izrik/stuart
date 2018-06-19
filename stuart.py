@@ -20,26 +20,38 @@
 
 
 import argparse
-import random
+from datetime import datetime
 from itertools import cycle
 from os import environ
-from datetime import datetime
+import random
 import re
 
-from flask import Flask, redirect, render_template, request, url_for, flash
+import dateutil.parser
+from flask import flash
+from flask import Flask
 from flask import Markup
-from flask_login import UserMixin, LoginManager, login_user, logout_user
-from flask_login import AnonymousUserMixin, current_user, login_required
-from flask_sqlalchemy import SQLAlchemy
+from flask import redirect
+from flask import render_template
+from flask import request
+from flask import url_for
 from flask_bcrypt import Bcrypt
-from werkzeug.exceptions import ServiceUnavailable, Unauthorized, NotFound
-from werkzeug.exceptions import BadRequest
+from flask_login import AnonymousUserMixin
+from flask_login import current_user
+from flask_login import login_required
+from flask_login import login_user
+from flask_login import LoginManager
+from flask_login import logout_user
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+import gfm  # noqa: F401
 import git
-import gfm
+import jinja2
 import markdown
 from slugify import slugify
-import dateutil.parser
-import jinja2
+from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import ServiceUnavailable
+from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
 from werkzeug.wsgi import DispatcherMiddleware
 
