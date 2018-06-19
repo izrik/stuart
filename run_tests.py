@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import unittest
 import argparse
-import logging
 from datetime import datetime
+import logging
+import unittest
 
 from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import NotFound
@@ -72,7 +72,7 @@ class PageTest(unittest.TestCase):
     def test_init_set_notes(self):
         # when a Page is created
         page = stuart.Page('title', 'content', datetime(2017, 1, 1), False,
-                             'notes')
+                           'notes')
 
         # then the is_private field is the same as what was passed to the
         # constructor
