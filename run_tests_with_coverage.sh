@@ -7,4 +7,6 @@ coverage run --source=stuart ./run_tests.py "$@" && \
     markdownlint README.md && \
     csslint static/stuart.css && \
     safety check && \
+    dockerlint Dockerfile && \
+    dockerfile_lint Dockerfile &&
     echo Success
