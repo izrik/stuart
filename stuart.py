@@ -530,6 +530,14 @@ def reset_slug(page_id):
     print('New slug is "{}"'.format(page.slug))
 
 
+if Config.PATH_PREFIX:
+    gapp = DispatcherMiddleware(Flask('Dummy-app'), {
+        Config.PATH_PREFIX: app
+    })
+else:
+    gapp = app
+
+
 def run():
     print('__revision__: {}'.format(__revision__))
     print('Site name: {}'.format(Config.SITENAME))
@@ -629,15 +637,8 @@ def run():
         db.session.delete(option)
         db.session.commit()
     else:
-        if Config.PATH_PREFIX:
-            app2 = DispatcherMiddleware(Flask('Dummy-app'), {
-                Config.PATH_PREFIX: app
-            })
-        else:
-            app2 = app
-
         run_simple(hostname=Config.HOST, port=Config.PORT,
-                   application=app2,
+                   application=gapp,
                    use_debugger=Config.DEBUG, use_reloader=Config.DEBUG,
                    passthrough_errors=True)
 
