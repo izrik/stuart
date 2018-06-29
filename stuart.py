@@ -532,7 +532,7 @@ def reset_slug(page_id):
 
 if Config.PATH_PREFIX:
     gapp = DispatcherMiddleware(Flask('Dummy-app'), {
-        Config.PATH_PREFIX: _app
+        Config.PATH_PREFIX: app
     })
 else:
     gapp = app
