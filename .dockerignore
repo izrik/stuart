@@ -62,15 +62,14 @@ include
 Scripts
 .venv
 
-# tudor test things
-tudor_tasks.p
-test.db
-set_env.sh
-.tudor
-set-env.sh
+# testing files
+instance/
 
 # scratch files
 _scratch*
 
 # coveralls
 .coveralls.yml
+
+# npm files
+node_modules/

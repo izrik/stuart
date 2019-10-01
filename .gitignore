@@ -96,3 +96,6 @@ ENV/
 # misc
 _scratch*
 .DS_Store
+
+# npm files
+node_modules/
