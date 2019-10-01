@@ -44,7 +44,6 @@ from flask_login import logout_user
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 import gfm  # noqa: F401
-import git
 import jinja2
 import markdown
 from slugify import slugify
@@ -57,9 +56,13 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 __version__ = '0.4'
 try:
-    __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
-                                              always=True, abbrev=40)
-except git.InvalidGitRepositoryError:
+    import git
+    try:
+        __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
+                                                  always=True, abbrev=40)
+    except git.InvalidGitRepositoryError:
+        __revision__ = 'unknown'
+except ImportError:
     __revision__ = 'unknown'
 
 
