@@ -5,6 +5,7 @@ sudo: false
 install:
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
+    - pip freeze
     - npm ci
 script:
     - ./run_tests_with_coverage.sh
