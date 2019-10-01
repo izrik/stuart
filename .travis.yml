@@ -3,7 +3,7 @@ python:
     - "3.7"
 sudo: false
 install:
-    - pip uninstall numpy
+    - pip uninstall -y numpy
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
     - npm ci
