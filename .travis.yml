@@ -6,7 +6,7 @@ install:
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
     - npm install
-    - ./install-other-deps.sh
+    - bash -xe ./install-other-deps.sh
 script:
     - ./run_tests_with_coverage.sh
 after_success:
