@@ -53,7 +53,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.exceptions import ServiceUnavailable
 from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
-from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 __version__ = '0.3'
 try:
