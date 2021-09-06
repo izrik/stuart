@@ -22,8 +22,8 @@
 
 <div class="container">
     <div class="index-tag-list">
-    {% set index = Options.seq().next %}
-    {% set odd_even = Options.cycle(['odd', 'even']).next %}
+    {% set index = Options.seq().__next__ %}
+    {% set odd_even = Options.cycle(['odd', 'even']).__next__ %}
     {% for tag in tags %}
         {% if current_user.is_authenticated %}{%
             set page_count = tag.pages.count()

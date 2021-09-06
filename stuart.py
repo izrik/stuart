@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # stuart - a python wiki system
 # Copyright (C) 2016-2017 izrik
@@ -53,7 +53,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.exceptions import ServiceUnavailable
 from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
-from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 __version__ = '0.3'
 try:
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     if args.create_secret_key:
         digits = '0123456789abcdef'
-        key = ''.join((random.choice(digits) for x in xrange(48)))
+        key = ''.join((random.choice(digits) for x in range(48)))
         print(key)
         exit(0)
 
@@ -230,7 +230,7 @@ class Page(db.Model):
     def content(self, value):
         if value is None:
             value = ''
-        value = unicode(value)
+        value = str(value)
         self._content = value
         self.summary = self.summarize(value)
 
@@ -338,7 +338,9 @@ def setup_options():
 
 @app.template_filter(name='gfm')
 def render_gfm(s):
-    output = markdown.markdown(s, extensions=['gfm'])
+    from mdx_gfm import GithubFlavoredMarkdownExtension
+    output = markdown.markdown(
+        s, extensions=[GithubFlavoredMarkdownExtension()])
     moutput = Markup(output)
     return moutput
 

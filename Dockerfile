@@ -1,6 +1,6 @@
-FROM python:2.7
+FROM python:3.8.12-alpine3.14
 
-ENV STUART_VERSION=0.1
+ENV STUART_VERSION=0.3
 LABEL \
     Name="stuart" \
     Version="$STUART_VERSION" \
@@ -22,9 +22,13 @@ COPY stuart.py \
 COPY static static
 COPY templates templates
 
-RUN pip install -r requirements.txt
-RUN pip install gunicorn==19.8.1
-RUN pip install MySQL-python==1.2.5
+RUN apk add git bash
+RUN pip install --upgrade pip setuptools wheel
+RUN apk add --virtual .build-deps gcc musl-dev libffi-dev postgresql-dev g++ && \
+    pip install -r requirements.txt \
+                gunicorn==20.1.0 \
+                psycopg2==2.8.6 && \
+    apk --purge del .build-deps
 
 EXPOSE 8080
 ENV STUART_PORT=8080 \
