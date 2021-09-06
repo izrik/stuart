@@ -1,7 +1,19 @@
 {
+  "name": "stuart",
+  "description": "A Python wiki system <https://github.com/izrik/stuart>",
   "devDependencies": {
     "csslint": "^1.0.5",
     "dockerlint": "^0.3.9",
     "markdownlint-cli": "^0.28.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izrik/stuart.git"
+  },
+  "author": "izrik",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/izrik/stuart/issues"
+  },
+  "homepage": "https://github.com/izrik/stuart"
 }
