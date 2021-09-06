@@ -338,7 +338,9 @@ def setup_options():
 
 @app.template_filter(name='gfm')
 def render_gfm(s):
-    output = markdown.markdown(s, extensions=['gfm'])
+    from mdx_gfm import GithubFlavoredMarkdownExtension
+    output = markdown.markdown(
+        s, extensions=[GithubFlavoredMarkdownExtension()])
     moutput = Markup(output)
     return moutput
 
