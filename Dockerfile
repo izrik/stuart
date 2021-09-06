@@ -1,6 +1,6 @@
 FROM python:2.7
 
-ENV STUART_VERSION=0.1
+ENV STUART_VERSION=0.3
 LABEL \
     Name="stuart" \
     Version="$STUART_VERSION" \
