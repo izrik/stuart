@@ -29,7 +29,6 @@ RUN apk add --virtual .build-deps gcc musl-dev libffi-dev postgresql-dev g++ && 
                 gunicorn==20.1.0 \
                 psycopg2==2.8.6 && \
     apk --purge del .build-deps
-RUN pip install -r requirements.txt
 
 EXPOSE 8080
 ENV STUART_PORT=8080 \
