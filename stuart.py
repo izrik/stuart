@@ -55,7 +55,7 @@ from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-__version__ = '0.3'
+__version__ = '0.4'
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
                                               always=True, abbrev=40)
