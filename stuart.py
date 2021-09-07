@@ -541,8 +541,10 @@ def logout():
     return redirect(url_for('index'))
 
 
-def cmd_create_db():
-    print('Setting up the database')
+def cmd_create_db(_print=None):
+    if _print is None:
+        _print = print
+    _print('Setting up the database')
     db.create_all()
 
 
@@ -671,6 +673,7 @@ def run():
         db.session.delete(option)
         db.session.commit()
     else:
+        cmd_create_db()
         run_simple(hostname=Config.HOST, port=Config.PORT,
                    application=gapp,
                    use_debugger=Config.DEBUG, use_reloader=Config.DEBUG,
