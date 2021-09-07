@@ -22,6 +22,7 @@ RUN apk add --virtual .build-deps gcc musl-dev libffi-dev postgresql-dev g++ && 
                 gunicorn==20.1.0 \
                 psycopg2==2.8.6 && \
     apk --purge del .build-deps
+RUN apk add libpq
 
 COPY stuart.py \
      LICENSE \
