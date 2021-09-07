@@ -71,7 +71,8 @@ class Config(object):
     HOST = environ.get('STUART_HOST', '127.0.0.1')
     PORT = environ.get('STUART_PORT', 2512)
     DEBUG = environ.get('STUART_DEBUG', False)
-    DB_URI = environ.get('STUART_DB_URI', 'sqlite:////tmp/wiki.db')
+    DB_URI = environ.get('STUART_DB_URI')
+    DB_URI_FILE = environ.get('STUART_DB_URI_FILE')
     SITENAME = environ.get('STUART_SITENAME', 'Site Name')
     PATH_PREFIX = environ.get('STUART_PATH_PREFIX', '')
     CUSTOM_TEMPLATES = environ.get('STUART_CUSTOM_TEMPLATES', None)
@@ -93,6 +94,8 @@ if __name__ == "__main__":
                         default=Config.DEBUG)
     parser.add_argument('--db-uri', type=str, action='store',
                         default=Config.DB_URI)
+    parser.add_argument('--db-uri-file', type=str, action='store',
+                        default=Config.DB_URI_FILE)
     parser.add_argument('--sitename', type=str,
                         default=Config.SITENAME, help='')
     parser.add_argument('--path-prefix', type=str,
@@ -140,6 +143,7 @@ if __name__ == "__main__":
     Config.PORT = args.port
     Config.DEBUG = args.debug
     Config.DB_URI = args.db_uri
+    Config.DB_URI_FILE = args.db_uri_file
     Config.SITENAME = args.sitename
     Config.PATH_PREFIX = args.path_prefix
     Config.CUSTOM_TEMPLATES = args.custom_templates
@@ -157,7 +161,26 @@ if Config.CUSTOM_TEMPLATES:
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config["SECRET_KEY"] = Config.SECRET_KEY  # for WTF-forms and login
-app.config['SQLALCHEMY_DATABASE_URI'] = Config.DB_URI
+
+db_uri = 'sqlite://'
+if Config.DB_URI:
+    db_uri = Config.DB_URI
+elif Config.DB_URI_FILE:
+    try:
+        with open(Config.DB_URI_FILE) as f:
+            db_uri = f.read().strip()
+    except FileNotFoundError:
+        raise ConfigError(
+            f'Could not find uri file "{Config.DB_URI_FILE}".')
+    except PermissionError:
+        raise ConfigError(
+            f'Permission error when opening uri file '
+            f'"{Config.DB_URI_FILE}".')
+    except Exception as e:
+        raise ConfigError(
+            f'Error opening uri file "{Config.DB_URI_FILE}": {e}')
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+
 app.config['APPLICATION_ROOT'] = Config.PATH_PREFIX
 
 # extensions
@@ -243,7 +266,7 @@ class Page(db.Model):
 
     @classmethod
     def get_by_title(cls, title):
-        return Page.query.filter_by(title=title).first()
+        return Page.query.filter(Page._title==title).first()
 
     @classmethod
     def get_unique_slug(cls, title):
@@ -350,7 +373,6 @@ def render_gfm(s):
 
 @app.route("/")
 def index():
-
     page_name = Options.get_main_page()
     page = Page.get_by_title(page_name)
     if not page:
@@ -559,6 +581,8 @@ def run():
         print('Custom template path: {}'.format(Config.CUSTOM_TEMPLATES))
     if Config.DEBUG:
         print('DB URI: {}'.format(Config.DB_URI))
+        print('DB URI File: {}'.format(Config.DB_URI_FILE))
+        print(f"Effective DB URI: {db_uri}")
         print('Secret Key: {}'.format(Config.SECRET_KEY))
     print('Local Resources: {}'.format(Config.LOCAL_RESOURCES))
 
