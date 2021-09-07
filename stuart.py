@@ -66,6 +66,14 @@ except ImportError:
     __revision__ = 'unknown'
 
 
+class StuartError(Exception):
+    pass
+
+
+class ConfigError(StuartError):
+    pass
+
+
 class Config(object):
     SECRET_KEY = environ.get('STUART_SECRET_KEY', 'secret')
     HOST = environ.get('STUART_HOST', '127.0.0.1')
