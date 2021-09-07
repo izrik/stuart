@@ -541,7 +541,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-def create_db():
+def cmd_create_db():
     db.create_all()
 
 
@@ -588,7 +588,7 @@ def run():
 
     if args.create_db:
         print('Setting up the database')
-        create_db()
+        cmd_create_db()
     elif args.hash_password is not None:
         print(hash_password(args.hash_password))
     elif args.reset_slug is not None:
