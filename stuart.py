@@ -266,7 +266,7 @@ class Page(db.Model):
 
     @classmethod
     def get_by_title(cls, title):
-        return Page.query.filter_by(title=title).first()
+        return Page.query.filter(Page._title==title).first()
 
     @classmethod
     def get_unique_slug(cls, title):
@@ -373,7 +373,6 @@ def render_gfm(s):
 
 @app.route("/")
 def index():
-
     page_name = Options.get_main_page()
     page = Page.get_by_title(page_name)
     if not page:
