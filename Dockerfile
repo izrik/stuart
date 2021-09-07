@@ -1,6 +1,6 @@
 FROM python:3.8.12-alpine3.14
 
-ENV STUART_VERSION=0.4
+ENV STUART_VERSION=0.5
 LABEL \
     Name="stuart" \
     Version="$STUART_VERSION" \

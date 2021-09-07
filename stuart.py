@@ -54,7 +54,7 @@ from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-__version__ = '0.4'
+__version__ = '0.5'
 try:
     import git
     try:
