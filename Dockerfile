@@ -12,15 +12,8 @@ RUN mkdir -p /opt/stuart
 
 WORKDIR /opt/stuart
 
-COPY stuart.py \
-     LICENSE \
-     README.md \
-     requirements.txt \
-     docker_start.sh \
+COPY requirements.txt \
      ./
-
-COPY static static
-COPY templates templates
 
 RUN apk add git bash
 RUN pip install --upgrade pip setuptools wheel
@@ -29,6 +22,15 @@ RUN apk add --virtual .build-deps gcc musl-dev libffi-dev postgresql-dev g++ && 
                 gunicorn==20.1.0 \
                 psycopg2==2.8.6 && \
     apk --purge del .build-deps
+
+COPY stuart.py \
+     LICENSE \
+     README.md \
+     docker_start.sh \
+     ./
+
+COPY static static
+COPY templates templates
 
 EXPOSE 8080
 ENV STUART_PORT=8080 \
