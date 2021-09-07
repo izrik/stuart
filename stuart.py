@@ -57,6 +57,7 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 __version__ = '0.5'
 try:
     import git
+
     try:
         __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
                                                   always=True, abbrev=40)
@@ -157,7 +158,6 @@ if __name__ == "__main__":
     Config.CUSTOM_TEMPLATES = args.custom_templates
     Config.AUTHOR = args.author
     Config.LOCAL_RESOURCES = args.local_resources
-
 
 app = Flask(__name__)
 
@@ -274,7 +274,7 @@ class Page(db.Model):
 
     @classmethod
     def get_by_title(cls, title):
-        return Page.query.filter(Page._title==title).first()
+        return Page.query.filter(Page._title == title).first()
 
     @classmethod
     def get_unique_slug(cls, title):
@@ -428,7 +428,6 @@ def login():
 
 @app.route('/page/<slug>', methods=['GET'])
 def get_page(slug):
-
     page = Page.get_by_slug(slug)
     if not page:
         raise NotFound()
