@@ -673,12 +673,12 @@ def run():
         db.session.delete(option)
         db.session.commit()
     else:
-        cmd_create_db()
         run_simple(hostname=Config.HOST, port=Config.PORT,
                    application=gapp,
                    use_debugger=Config.DEBUG, use_reloader=Config.DEBUG,
                    passthrough_errors=True)
 
 
+cmd_create_db()
 if __name__ == "__main__":
     run()
