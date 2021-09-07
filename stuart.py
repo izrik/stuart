@@ -54,9 +54,10 @@ from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-__version__ = '0.4'
+__version__ = '0.5'
 try:
     import git
+
     try:
         __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
                                                   always=True, abbrev=40)
@@ -64,6 +65,14 @@ try:
         __revision__ = 'unknown'
 except ImportError:
     __revision__ = 'unknown'
+
+
+class StuartError(Exception):
+    pass
+
+
+class ConfigError(StuartError):
+    pass
 
 
 class Config(object):
@@ -149,7 +158,6 @@ if __name__ == "__main__":
     Config.CUSTOM_TEMPLATES = args.custom_templates
     Config.AUTHOR = args.author
     Config.LOCAL_RESOURCES = args.local_resources
-
 
 app = Flask(__name__)
 
@@ -266,7 +274,7 @@ class Page(db.Model):
 
     @classmethod
     def get_by_title(cls, title):
-        return Page.query.filter(Page._title==title).first()
+        return Page.query.filter(Page._title == title).first()
 
     @classmethod
     def get_unique_slug(cls, title):
@@ -420,7 +428,6 @@ def login():
 
 @app.route('/page/<slug>', methods=['GET'])
 def get_page(slug):
-
     page = Page.get_by_slug(slug)
     if not page:
         raise NotFound()
@@ -541,7 +548,10 @@ def logout():
     return redirect(url_for('index'))
 
 
-def create_db():
+def cmd_create_db(_print=None):
+    if _print is None:
+        _print = print
+    _print('Setting up the database')
     db.create_all()
 
 
@@ -587,8 +597,7 @@ def run():
     print('Local Resources: {}'.format(Config.LOCAL_RESOURCES))
 
     if args.create_db:
-        print('Setting up the database')
-        create_db()
+        cmd_create_db()
     elif args.hash_password is not None:
         print(hash_password(args.hash_password))
     elif args.reset_slug is not None:
@@ -677,5 +686,6 @@ def run():
                    passthrough_errors=True)
 
 
+cmd_create_db()
 if __name__ == "__main__":
     run()

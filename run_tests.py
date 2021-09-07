@@ -302,7 +302,7 @@ class CreateDbTest(unittest.TestCase):
         self.assertRaises(OperationalError, stuart.Option.query.first)
 
         # when the create_db function is called
-        stuart.create_db()
+        stuart.cmd_create_db()
 
         # then the database tables are created
         self.assertIsNone(stuart.Page.query.first())
