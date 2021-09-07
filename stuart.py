@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # stuart - a python wiki system
-# Copyright (C) 2016-2017 izrik
+# Copyright (C) 2016-2021 izrik
 #
 # This file is a part of stuart.
 #
@@ -54,7 +54,7 @@ from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-__version__ = '0.5'
+__version__ = '0.6'
 try:
     import git
 
