@@ -207,7 +207,7 @@ tags_table = db.Table(
     db.Column('page_id', db.Integer, db.ForeignKey('page.id'), index=True))
 
 
-class UserModel(db.Model):
+class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), index=True, unique=True)
     hashed_password = db.Column(db.String(100))
@@ -228,7 +228,7 @@ class UserModel(db.Model):
         return self.id
 
     def __eq__(self, other):
-        if isinstance(other, UserModel):
+        if isinstance(other, User):
             return self.get_id() == other.get_id()
         return False
 
@@ -375,7 +375,7 @@ class Options(object):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return UserModel.query.get(user_id)
+    return User.query.get(user_id)
 
 
 @app.context_processor
@@ -423,7 +423,7 @@ def login():
 
     email = request.form['email']
     password = request.form['password']
-    user = UserModel.query.filter_by(email=email).first()
+    user = User.query.filter_by(email=email).first()
     if user is None:
         flash('Password is invalid', 'error')
         raise BadRequest
@@ -564,7 +564,7 @@ def cmd_create_db(_print=None):
         _print = print
     _print('Setting up the database')
     db.create_all()
-    if not UserModel.query.all():
+    if not User.query.all():
         chars = 'abcdefghijklmnopqrstuvwxyz' \
                 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' \
                 '0123456789'
@@ -572,7 +572,7 @@ def cmd_create_db(_print=None):
         password = ''.join(choice(chars) for _ in range(32))
         _print(f'Creating default user "root" with password "{password}"')
         hashed_password = hash_password(password)
-        user = UserModel(email='root', hashed_password=hashed_password)
+        user = User(email='root', hashed_password=hashed_password)
         db.session.add(user)
         db.session.commit()
 
@@ -704,7 +704,7 @@ def run():
     elif args.create_user is not None:
         email, password = args.create_user
         hashed_password = hash_password(password)
-        user = UserModel(email=email, hashed_password=hashed_password)
+        user = User(email=email, hashed_password=hashed_password)
         db.session.add(user)
         db.session.commit()
         print(f'Created user with email {email}')
