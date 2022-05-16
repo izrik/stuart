@@ -201,25 +201,6 @@ app.db = db
 bcrypt = Bcrypt(app)
 
 
-# user class for providing authentication
-class User(UserMixin):
-    def __init__(self, name, email):
-        self.id = name
-        self.name = name
-        self.email = email
-
-    def get_name(self):
-        return self.name
-
-    @property
-    def is_authenticated(self):
-        return True
-
-
-class Guest(AnonymousUserMixin):
-    pass
-
-
 tags_table = db.Table(
     'tags_pages',
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), index=True),
@@ -230,6 +211,29 @@ class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), index=True, unique=True)
     hashed_password = db.Column(db.String(100))
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+    def __eq__(self, other):
+        if isinstance(other, UserModel):
+            return self.get_id() == other.get_id()
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 class Page(db.Model):
@@ -371,7 +375,7 @@ class Options(object):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User(Options.get_author(), Options.get_author())
+    return UserModel.query.get(user_id)
 
 
 @app.context_processor
@@ -417,18 +421,16 @@ def login():
     if request.method == 'GET':
         return render_template('login.html')
 
-    nvp = Option.query.get('hashed_password')
-    if not nvp:
-        raise ServiceUnavailable('No password set')
-    stored_password = nvp.value
-    if not stored_password:
-        raise ServiceUnavailable('No password set')
+    email = request.form['email']
     password = request.form['password']
-    if not bcrypt.check_password_hash(stored_password, password):
+    user = UserModel.query.filter_by(email=email).first()
+    if user is None:
+        flash('Password is invalid', 'error')
+        raise BadRequest
+    if not bcrypt.check_password_hash(user.hashed_password, password):
         flash('Password is invalid', 'error')
         return redirect(url_for('login'))
 
-    user = User(Options.get_author(), Options.get_author())
     login_user(user)
     flash('Logged in successfully')
     # return redirect(request.args.get('next_url') or url_for('index'))
