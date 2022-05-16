@@ -35,13 +35,11 @@ from flask import render_template
 from flask import request
 from flask import url_for
 from flask_bcrypt import Bcrypt
-from flask_login import AnonymousUserMixin
 from flask_login import current_user
 from flask_login import login_required
 from flask_login import login_user
 from flask_login import LoginManager
 from flask_login import logout_user
-from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 import gfm  # noqa: F401
 import jinja2
@@ -49,7 +47,6 @@ import markdown
 from slugify import slugify
 from werkzeug.exceptions import BadRequest
 from werkzeug.exceptions import NotFound
-from werkzeug.exceptions import ServiceUnavailable
 from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
