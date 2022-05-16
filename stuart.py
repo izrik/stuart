@@ -138,7 +138,7 @@ if __name__ == "__main__":
     parser.add_argument('--set-option', action='store', nargs=2,
                         metavar=('NAME', 'VALUE'))
     parser.add_argument('--clear-option', action='store', metavar='NAME')
-    parser.add_argument('--create-user', metavar='EMAIL_AND_PASSWORD',
+    parser.add_argument('--create-user', metavar=('EMAIL', 'PASSWORD'),
                         nargs=2, help='Create a user with the indicated '
                                       'email address and password')
 
