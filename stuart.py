@@ -223,6 +223,12 @@ tags_table = db.Table(
     db.Column('page_id', db.Integer, db.ForeignKey('page.id'), index=True))
 
 
+class UserModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), index=True, unique=True)
+    hashed_password = db.Column(db.String(100))
+
+
 class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     _title = db.Column(db.String(100), name='title')
