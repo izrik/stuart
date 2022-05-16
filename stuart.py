@@ -559,6 +559,17 @@ def cmd_create_db(_print=None):
         _print = print
     _print('Setting up the database')
     db.create_all()
+    if not UserModel.query.all():
+        chars = 'abcdefghijklmnopqrstuvwxyz' \
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZ' \
+                '0123456789'
+        from secrets import choice
+        password = ''.join(choice(chars) for _ in range(32))
+        _print(f'Creating default user "root" with password "{password}"')
+        hashed_password = hash_password(password)
+        user = UserModel(email='root', hashed_password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
 
 
 def hash_password(unhashed_password):
