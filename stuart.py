@@ -138,6 +138,9 @@ if __name__ == "__main__":
     parser.add_argument('--set-option', action='store', nargs=2,
                         metavar=('NAME', 'VALUE'))
     parser.add_argument('--clear-option', action='store', metavar='NAME')
+    parser.add_argument('--create-user', metavar='EMAIL_AND_PASSWORD',
+                        nargs=2, help='Create a user with the indicated '
+                                      'email address and password')
 
     args = parser.parse_args()
 
@@ -696,6 +699,13 @@ def run():
         print('Old value is "{}"'.format(option.value))
         db.session.delete(option)
         db.session.commit()
+    elif args.create_user is not None:
+        email, password = args.create_user
+        hashed_password = hash_password(password)
+        user = UserModel(email=email, hashed_password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        print(f'Created user with email {email}')
     else:
         run_simple(hostname=Config.HOST, port=Config.PORT,
                    application=gapp,
