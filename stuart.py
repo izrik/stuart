@@ -114,8 +114,8 @@ if __name__ == "__main__":
                              "location will be used.")
     parser.add_argument('--author', type=str, default=Config.AUTHOR,
                         help='The name of the author of the site. This name '
-                             'will appear in the "Posted by" line on pages, '
-                             'and in the copyright section in the footer.')
+                             'will appear in the copyright section in the '
+                             'footer.')
     parser.add_argument('--local-resources', action='store_true',
                         default=Config.LOCAL_RESOURCES,
                         help='Use local resources (CSS and JS served from the '
