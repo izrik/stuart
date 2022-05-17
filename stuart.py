@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # stuart - a python wiki system
-# Copyright (C) 2016-2021 izrik
+# Copyright (C) 2016-2022 izrik
 #
 # This file is a part of stuart.
 #
@@ -51,7 +51,7 @@ from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-__version__ = '0.6'
+__version__ = '0.7'
 try:
     import git
 
@@ -114,8 +114,8 @@ if __name__ == "__main__":
                              "location will be used.")
     parser.add_argument('--author', type=str, default=Config.AUTHOR,
                         help='The name of the author of the site. This name '
-                             'will appear in the "Posted by" line on pages, '
-                             'and in the copyright section in the footer.')
+                             'will appear in the copyright section in the '
+                             'footer.')
     parser.add_argument('--local-resources', action='store_true',
                         default=Config.LOCAL_RESOURCES,
                         help='Use local resources (CSS and JS served from the '
