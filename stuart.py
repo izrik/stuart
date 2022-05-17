@@ -193,6 +193,7 @@ app.config['APPLICATION_ROOT'] = Config.PATH_PREFIX
 
 # extensions
 login_manager = LoginManager(app)
+login_manager.init_app(app)
 db = SQLAlchemy(app)
 app.db = db
 bcrypt = Bcrypt(app)
