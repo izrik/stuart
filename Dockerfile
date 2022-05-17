@@ -15,14 +15,13 @@ WORKDIR /opt/stuart
 COPY requirements.txt \
      ./
 
-RUN apk add git bash
+RUN apk add git bash libpq
 RUN pip install --upgrade pip setuptools wheel
 RUN apk add --virtual .build-deps gcc musl-dev libffi-dev postgresql-dev g++ && \
-    pip install -r requirements.txt \
-                gunicorn==20.1.0 \
-                psycopg2==2.8.6 && \
+    pip install gunicorn==20.1.0 \
+                psycopg2==2.8.6 \
+                -r requirements.txt && \
     apk --purge del .build-deps
-RUN apk add libpq
 
 COPY stuart.py \
      LICENSE \

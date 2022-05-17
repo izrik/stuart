@@ -35,13 +35,11 @@ from flask import render_template
 from flask import request
 from flask import url_for
 from flask_bcrypt import Bcrypt
-from flask_login import AnonymousUserMixin
 from flask_login import current_user
 from flask_login import login_required
 from flask_login import login_user
 from flask_login import LoginManager
 from flask_login import logout_user
-from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 import gfm  # noqa: F401
 import jinja2
@@ -49,7 +47,6 @@ import markdown
 from slugify import slugify
 from werkzeug.exceptions import BadRequest
 from werkzeug.exceptions import NotFound
-from werkzeug.exceptions import ServiceUnavailable
 from werkzeug.exceptions import Unauthorized
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
@@ -138,6 +135,9 @@ if __name__ == "__main__":
     parser.add_argument('--set-option', action='store', nargs=2,
                         metavar=('NAME', 'VALUE'))
     parser.add_argument('--clear-option', action='store', metavar='NAME')
+    parser.add_argument('--create-user', metavar=('EMAIL', 'PASSWORD'),
+                        nargs=2, help='Create a user with the indicated '
+                                      'email address and password')
 
     args = parser.parse_args()
 
@@ -193,34 +193,45 @@ app.config['APPLICATION_ROOT'] = Config.PATH_PREFIX
 
 # extensions
 login_manager = LoginManager(app)
+login_manager.init_app(app)
 db = SQLAlchemy(app)
 app.db = db
 bcrypt = Bcrypt(app)
-
-
-# user class for providing authentication
-class User(UserMixin):
-    def __init__(self, name, email):
-        self.id = name
-        self.name = name
-        self.email = email
-
-    def get_name(self):
-        return self.name
-
-    @property
-    def is_authenticated(self):
-        return True
-
-
-class Guest(AnonymousUserMixin):
-    pass
 
 
 tags_table = db.Table(
     'tags_pages',
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), index=True),
     db.Column('page_id', db.Integer, db.ForeignKey('page.id'), index=True))
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), index=True, unique=True)
+    hashed_password = db.Column(db.String(100))
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+    def __eq__(self, other):
+        if isinstance(other, User):
+            return self.get_id() == other.get_id()
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 class Page(db.Model):
@@ -362,7 +373,7 @@ class Options(object):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User(Options.get_author(), Options.get_author())
+    return User.query.get(user_id)
 
 
 @app.context_processor
@@ -408,18 +419,16 @@ def login():
     if request.method == 'GET':
         return render_template('login.html')
 
-    nvp = Option.query.get('hashed_password')
-    if not nvp:
-        raise ServiceUnavailable('No password set')
-    stored_password = nvp.value
-    if not stored_password:
-        raise ServiceUnavailable('No password set')
+    email = request.form['email']
     password = request.form['password']
-    if not bcrypt.check_password_hash(stored_password, password):
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        flash('Password is invalid', 'error')
+        raise BadRequest
+    if not bcrypt.check_password_hash(user.hashed_password, password):
         flash('Password is invalid', 'error')
         return redirect(url_for('login'))
 
-    user = User(Options.get_author(), Options.get_author())
     login_user(user)
     flash('Logged in successfully')
     # return redirect(request.args.get('next_url') or url_for('index'))
@@ -553,6 +562,17 @@ def cmd_create_db(_print=None):
         _print = print
     _print('Setting up the database')
     db.create_all()
+    if not User.query.all():
+        chars = 'abcdefghijklmnopqrstuvwxyz' \
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZ' \
+                '0123456789'
+        from secrets import choice
+        password = ''.join(choice(chars) for _ in range(32))
+        _print(f'Creating default user "root" with password "{password}"')
+        hashed_password = hash_password(password)
+        user = User(email='root', hashed_password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
 
 
 def hash_password(unhashed_password):
@@ -679,6 +699,13 @@ def run():
         print('Old value is "{}"'.format(option.value))
         db.session.delete(option)
         db.session.commit()
+    elif args.create_user is not None:
+        email, password = args.create_user
+        hashed_password = hash_password(password)
+        user = User(email=email, hashed_password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        print(f'Created user with email {email}')
     else:
         run_simple(hostname=Config.HOST, port=Config.PORT,
                    application=gapp,
