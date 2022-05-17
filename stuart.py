@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # stuart - a python wiki system
-# Copyright (C) 2016-2021 izrik
+# Copyright (C) 2016-2022 izrik
 #
 # This file is a part of stuart.
 #
