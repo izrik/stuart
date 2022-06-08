@@ -407,7 +407,7 @@ def all_pages():
     query = Page.query
     if not current_user.is_authenticated:
         query = query.filter_by(is_private=False)
-    query = query.order_by(Page._title.asc())
+    query = query.order_by(Page._title.collate('NOCASE').asc())
     pager = query.paginate()
     pages = query
     return render_template("all_pages.html", pages=pages, pager=pager,
