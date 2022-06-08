@@ -29,7 +29,7 @@
             <a href="{{ url_for('get_page', slug=page.slug) }}">
                 <h1>{{ page.title }}{% if page.is_private%} <small>(Private)</small>{% endif %}</h1>
             </a>
-            <p>{{ page.date.strftime('%Y-%m-%d') }} - {{ Options.get_author() }}</p>
+            <p>Created {{ page.date.strftime('%Y-%m-%d') }}, Last Updated {{ page.last_updated_date.strftime('%Y-%m-%d') }}</p>
             <blockquote>{{ page.summary if page.summary }}</blockquote>
             <hr/>
         </div>
