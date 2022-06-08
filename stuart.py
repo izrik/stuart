@@ -537,7 +537,7 @@ def create_new():
 
 @app.route('/tags', methods=['GET'])
 def list_tags():
-    tags = Tag.query
+    tags = Tag.query.order_by(Tag.name.collate('NOCASE').asc())
     return render_template('list_tags.html', tags=tags)
 
 
