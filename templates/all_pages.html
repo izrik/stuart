@@ -22,6 +22,7 @@
 
 <div class="container">
     <div class="all-pages-page-list">
+    {% include 'page_links.fragment.html' %}
     {% set index = Options.seq().__next__ %}
     {% set odd_even = Options.cycle(['odd', 'even']).__next__ %}
     {% for page in pager.items %}
