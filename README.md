@@ -39,6 +39,12 @@ Stuart is configured via environment variables (`STUART_*`) or command-line argu
 
 See [docs/configuration.md](docs/configuration.md) for all options.
 
+## Documentation
+
+- [docs/configuration.md](docs/configuration.md) — every environment variable and command-line argument
+- [CHANGELOG.md](CHANGELOG.md) — what changed in each release
+- [CLAUDE.md](CLAUDE.md) — architecture and the development workflow
+
 ## Docker
 
 ```bash
