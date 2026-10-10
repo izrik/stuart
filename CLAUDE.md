@@ -57,10 +57,11 @@ static/            # CSS (Bootstrap + stuart.css)
 1. Create a feature branch from `master` (use hyphens, not slashes: `feature-my-feature`)
 2. Implement the change
 3. Run tests: `python run_tests.py`
-4. Commit with a descriptive message
+4. Commit with a descriptive message. Add an entry under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) for anything a user or operator would notice — a new command, a changed default, a new environment variable, a fixed bug. Internal refactors with no outward effect need none.
 5. Push and open a pull request against `master`
 6. Address review feedback
 
 ## Further Documentation
 
 - [Configuration](docs/configuration.md) — all environment variables and CLI options
+- [Changelog](CHANGELOG.md) — what changed in each release
