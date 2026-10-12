@@ -1,4 +1,4 @@
-FROM python:3.8.12-alpine3.14
+FROM python:3.11.17-alpine3.24
 
 ENV STUART_VERSION=0.7
 LABEL \
@@ -19,7 +19,7 @@ RUN apk add git bash libpq
 RUN pip install --upgrade pip setuptools wheel
 RUN apk add --virtual .build-deps gcc musl-dev libffi-dev postgresql-dev g++ && \
     pip install gunicorn==20.1.0 \
-                psycopg2==2.8.6 \
+                psycopg2==2.9.10 \
                 -r requirements.txt && \
     apk --purge del .build-deps
 

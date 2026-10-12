@@ -6,9 +6,13 @@ A Python wiki system built on Flask.
 
 ## Quick Start
 
+Stuart runs on Python 3.11, the version the Docker image and CI use. The
+dependencies in `requirements.txt` are pinned, so install them into a fresh
+virtual environment rather than alongside other packages.
+
 ```bash
 # Install dependencies
-python3 -m venv .venv && . .venv/bin/activate
+python3.11 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 
 # Initialize and run

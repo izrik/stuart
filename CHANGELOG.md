@@ -45,12 +45,32 @@ coding agents, and records what changed in each release.
   report the git revision in the page footer, and treats it as optional, but
   3.1.31 is what the Docker image installs.
 
+- **Python 3.11 replaces Python 3.8**
+  ([#45](https://github.com/izrik/stuart/issues/45)). The Docker base image
+  moves from `python:3.8.12-alpine3.14` to `python:3.11.17-alpine3.24` and
+  CI runs the tests and flake8 on 3.11. The image's `psycopg2` is upgraded
+  from 2.8.6 to 2.9.10 along with it: 2.9 is the first series that supports
+  Python 3.10 and newer, so 2.8.6 would no longer build. Nothing in
+  `requirements.txt` had to change for the new interpreter.
+
 ### Removed
 
 - **The dead `.travis.yml`** ([#43](https://github.com/izrik/stuart/issues/43)).
   Travis CI has not run for this repository in years, and the file still
   described a Python 2.7 build. What it recorded is now in
   [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+### Fixed
+
+- **A clean install can import Stuart again**
+  ([#45](https://github.com/izrik/stuart/issues/45)). `Werkzeug` and
+  `Markdown`, which `stuart.py` imports, were listed nowhere and came in
+  only as dependencies of Flask and py-gfm, so a `pip install -r
+  requirements.txt` into an empty environment picked the newest release of
+  each — which have removed the APIs Flask 2.0.1 and py-gfm 1.0.2 still
+  import, and `import stuart` died on
+  `werkzeug.urls.url_quote` or `markdown.util.etree`. Both are now pinned,
+  to Werkzeug 2.0.1 and Markdown 3.2.2.
 
 ## [v0.7] - 2022-05-16
 
