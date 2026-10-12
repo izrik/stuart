@@ -1,0 +1,99 @@
+---
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: python run_tests.py
+
+  lint-python:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+          cache: pip
+          cache-dependency-path: dev_requirements.txt
+      - name: Install lint tools
+        run: pip install -r dev_requirements.txt
+      - name: flake8
+        run: flake8 stuart.py run_tests.py
+
+  lint-shell:
+    name: Lint shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # shellcheck is preinstalled on the hosted Ubuntu image; print the
+      # version so the log records which one ran.
+      - name: shellcheck --version
+        run: shellcheck --version
+      - name: shellcheck
+        run: shellcheck run_tests_with_coverage.sh
+
+  lint-markdown:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install lint tools
+        run: npm ci
+      - name: markdownlint
+        run: ./node_modules/.bin/markdownlint README.md
+
+  lint-css:
+    name: Lint CSS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install lint tools
+        run: npm ci
+      - name: csslint
+        run: ./node_modules/.bin/csslint static/stuart.css
+
+  lint-dockerfile:
+    name: Lint Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install lint tools
+        run: npm ci
+      - name: dockerlint
+        run: ./node_modules/.bin/dockerlint Dockerfile

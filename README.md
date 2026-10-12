@@ -15,7 +15,8 @@ pip install -r requirements.txt
 python stuart.py --db-uri "sqlite:///wiki.db" --create-db
 ```
 
-Open <http://127.0.0.1:2512> in your browser. The default user credentials are printed to the console on first run.
+Open <http://127.0.0.1:2512> in your browser. The default user credentials
+are printed to the console on first run.
 
 ## Features
 
@@ -28,7 +29,8 @@ Open <http://127.0.0.1:2512> in your browser. The default user credentials are p
 
 ## Configuration
 
-Stuart is configured via environment variables (`STUART_*`) or command-line arguments. Common options:
+Stuart is configured via environment variables (`STUART_*`) or command-line
+arguments. Common options:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -41,7 +43,8 @@ See [docs/configuration.md](docs/configuration.md) for all options.
 
 ## Documentation
 
-- [docs/configuration.md](docs/configuration.md) — every environment variable and command-line argument
+- [docs/configuration.md](docs/configuration.md) — every environment
+  variable and command-line argument
 - [CHANGELOG.md](CHANGELOG.md) — what changed in each release
 - [CLAUDE.md](CLAUDE.md) — architecture and the development workflow
 

@@ -21,6 +21,15 @@ python run_tests.py
 # Full lint and test suite (requires both Python and npm deps)
 ./run_tests_with_coverage.sh
 
+# The checks CI gates pull requests with, individually
+python run_tests.py
+flake8 stuart.py run_tests.py
+shellcheck run_tests_with_coverage.sh
+npm ci
+./node_modules/.bin/markdownlint README.md
+./node_modules/.bin/csslint static/stuart.css
+./node_modules/.bin/dockerlint Dockerfile
+
 # Docker build and run
 docker build -t stuart . && docker run -p 8080:8080 stuart
 ```
@@ -56,10 +65,37 @@ static/            # CSS (Bootstrap + stuart.css)
 
 1. Create a feature branch from `master` (use hyphens, not slashes: `feature-my-feature`)
 2. Implement the change
-3. Run tests: `python run_tests.py`
+3. Run tests: `python run_tests.py`. Better, run the whole local gate,
+   `./run_tests_with_coverage.sh`, which is what CI checks (minus the two
+   steps that need credentials — see *Continuous integration* below).
 4. Commit with a descriptive message. Add an entry under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) for anything a user or operator would notice — a new command, a changed default, a new environment variable, a fixed bug. Internal refactors with no outward effect need none.
 5. Push and open a pull request against `master`
 6. Address review feedback
+
+## Continuous Integration
+
+Every pull request, and every push to `master`, is gated by
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml). It runs each of these
+as a separate check, so a failure names itself:
+
+| Check | Command |
+| --- | --- |
+| Python tests | `python run_tests.py` |
+| Lint Python | `flake8 stuart.py run_tests.py` |
+| Lint shell | `shellcheck run_tests_with_coverage.sh` |
+| Lint Markdown | `./node_modules/.bin/markdownlint README.md` |
+| Lint CSS | `./node_modules/.bin/csslint static/stuart.css` |
+| Lint Dockerfile | `./node_modules/.bin/dockerlint Dockerfile` |
+
+These are the same commands [`run_tests_with_coverage.sh`](run_tests_with_coverage.sh)
+chains, so running that script locally covers all of them. To reproduce the
+checks one at a time, install the Python dependencies
+(`pip install -r requirements.txt -r dev_requirements.txt`) and the npm
+linters (`npm ci`), then run the commands in the table above.
+
+Two steps of the local script are deliberately *not* in CI: `safety check`
+needs an account with an external service, and `coveralls` needs a repository
+token. `coverage html` is skipped too — it only writes a local HTML report.
 
 ## Further Documentation
 

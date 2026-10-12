@@ -28,12 +28,29 @@ coding agents, and records what changed in each release.
   ([#38](https://github.com/izrik/stuart/issues/38)). What changed between
   releases was previously recorded only in GitHub Releases and the git log.
 
+- **Continuous integration on pull requests**
+  ([#43](https://github.com/izrik/stuart/issues/43)).
+  [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the test suite
+  and every lint the repository already has — flake8, shellcheck,
+  markdownlint, csslint and dockerlint — on every pull request and on pushes
+  to `master`, each as its own check. The commands are the ones
+  [`run_tests_with_coverage.sh`](run_tests_with_coverage.sh) chains locally;
+  `safety check` and `coveralls` are left out because they need credentials
+  a pull request cannot have.
+
 ### Changed
 
 - GitPython upgraded from 3.1.18 to 3.1.31
   ([#34](https://github.com/izrik/stuart/pull/34)). Stuart uses it only to
   report the git revision in the page footer, and treats it as optional, but
   3.1.31 is what the Docker image installs.
+
+### Removed
+
+- **The dead `.travis.yml`** ([#43](https://github.com/izrik/stuart/issues/43)).
+  Travis CI has not run for this repository in years, and the file still
+  described a Python 2.7 build. What it recorded is now in
+  [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ## [v0.7] - 2022-05-16
 
