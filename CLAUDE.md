@@ -8,9 +8,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+Stuart targets Python 3.11 — the version the [`Dockerfile`](Dockerfile) and
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) pin. Every version in
+`requirements.txt` is pinned exactly, including `Werkzeug` and `Markdown`,
+whose newer releases have dropped APIs that Flask 2.0.1 and py-gfm 1.0.2
+still import. Don't upgrade either on its own.
+
 ```bash
 # Setup
-python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+python3.11 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 
 # Run the wiki
 python stuart.py --db-uri "sqlite:///wiki.db" --create-db
