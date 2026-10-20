@@ -21,6 +21,8 @@
 
 import argparse
 from datetime import datetime
+from difflib import SequenceMatcher
+from functools import lru_cache
 from itertools import cycle
 from os import environ
 import random
@@ -40,6 +42,7 @@ from flask_login import login_required
 from flask_login import login_user
 from flask_login import LoginManager
 from flask_login import logout_user
+from flask_sqlalchemy import Pagination
 from flask_sqlalchemy import SQLAlchemy
 import gfm  # noqa: F401
 import jinja2
@@ -234,6 +237,129 @@ class User(db.Model):
         return not self.__eq__(other)
 
 
+# Searching is deliberately forgiving. A query is split into terms, and each
+# term is matched against the words of each of a page's fields: exactly
+# first, then by a shared stem ("searching" and "searches"), then by prefix,
+# then by close spelling, so a typo or a different inflection still finds the
+# page. A term that matches nothing can also be matched through its synonyms,
+# if the site defines any. Each field contributes its weight times the best
+# score for the term, and pages matching only some of the terms are scored
+# down in proportion.
+#
+# Every candidate page is scored in Python rather than in the database, which
+# is what lets the matching be fuzzy at all. That is fine at the scale of a
+# wiki; a site with very many large pages would want a real index instead.
+
+SEARCH_FIELD_WEIGHTS = {
+    'title': 8.0,
+    'tags': 4.0,
+    'notes': 2.0,
+    'content': 1.0,
+}
+# How close two words' spellings must be, as a difflib ratio, to count as a
+# match at all, and what a perfectly-rated fuzzy match is worth next to an
+# exact one.
+SEARCH_FUZZY_THRESHOLD = 0.75
+SEARCH_FUZZY_SCORE = 0.6
+SEARCH_STEM_SCORE = 0.9
+SEARCH_PREFIX_SCORE = 0.7
+# A term matched only through a synonym is worth this fraction of the same
+# match on the term itself.
+SEARCH_SYNONYM_FACTOR = 0.8
+# Below this length a term is too short to be a meaningful prefix of, or to
+# have a stem.
+SEARCH_MIN_WORD_LENGTH = 3
+
+# Suffixes stripped to find a word's stem, longest first, each with what
+# replaces it.
+SEARCH_SUFFIXES = (
+    ('ies', 'y'),
+    ('ied', 'y'),
+    ('ing', ''),
+    ('es', ''),
+    ('ed', ''),
+    ('ly', ''),
+    ('s', ''),
+)
+
+
+def tokenize(value):
+    """Split a value into lower-case words of letters and digits."""
+    if not value:
+        return []
+    return re.findall(r'[a-z0-9]+', value.lower())
+
+
+@lru_cache(maxsize=4096)
+def word_variants(word):
+    """A word together with its de-suffixed forms.
+
+    Two words share a stem if their variants overlap, which makes the
+    comparison symmetric: it doesn't matter whether the query or the page
+    holds the inflected form. The returned set must not be modified -- it is
+    cached and shared between callers.
+    """
+    variants = {word}
+    for suffix, replacement in SEARCH_SUFFIXES:
+        if not word.endswith(suffix):
+            continue
+        base = word[:-len(suffix)] + replacement
+        if len(base) >= SEARCH_MIN_WORD_LENGTH:
+            variants.add(base)
+            if not base.endswith('e'):
+                # "pages" -> "pag" -> "page", "writing" -> "writ" -> "write"
+                variants.add(base + 'e')
+    return variants
+
+
+def score_term_in_words(term, words):
+    """How well a single search term matches one field's words.
+
+    1.0 for an exact word, less for a shared stem, a prefix, or a close
+    spelling, and 0.0 when nothing in the field is close enough.
+    """
+    if not words:
+        return 0.0
+    if term in words:
+        return 1.0
+    term_is_long = len(term) >= SEARCH_MIN_WORD_LENGTH
+    term_variants = word_variants(term) if term_is_long else {term}
+    best = 0.0
+    for word in words:
+        if term_is_long and word_variants(word) & term_variants:
+            score = SEARCH_STEM_SCORE
+        elif term_is_long and word.startswith(term):
+            score = SEARCH_PREFIX_SCORE
+        else:
+            ratio = SequenceMatcher(None, term, word).ratio()
+            if ratio < SEARCH_FUZZY_THRESHOLD:
+                continue
+            score = SEARCH_FUZZY_SCORE * ratio
+        if score > best:
+            best = score
+            if best >= SEARCH_STEM_SCORE:
+                break
+    return best
+
+
+def parse_synonyms(value):
+    """Parse a synonym list into a mapping from word to equivalent words.
+
+    Groups of equivalent words are separated by semicolons or newlines, and
+    the words within a group by anything that isn't a letter or a digit:
+
+        cat, feline; dog, canine, hound
+    """
+    synonyms = {}
+    if not value:
+        return synonyms
+    for group in re.split(r'[;\n]', value):
+        words = set(tokenize(group))
+        for word in words:
+            synonyms.setdefault(word, set()).update(words - {word})
+    return synonyms
+
+
 class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     _title = db.Column(db.String(100), name='title')
@@ -307,6 +433,60 @@ class Page(db.Model):
         if not self.slug and self._title:
             self.slug = self.get_unique_slug(self._title)
 
+    @property
+    def search_fields(self):
+        return {
+            'title': self.title,
+            'tags': ' '.join(tag.name for tag in self.tags),
+            'notes': self.notes,
+            'content': self.content,
+        }
+
+    def get_search_score(self, terms, synonyms=None):
+        """Score this page against already-tokenized search terms."""
+        words = {name: tokenize(value)
+                 for name, value in self.search_fields.items()}
+        total = 0.0
+        matched = 0
+        for term in terms:
+            term_score = 0.0
+            for field, weight in SEARCH_FIELD_WEIGHTS.items():
+                score = score_term_in_words(term, words[field])
+                if not score and synonyms:
+                    for synonym in synonyms.get(term, ()):
+                        score = max(score,
+                                    SEARCH_SYNONYM_FACTOR *
+                                    score_term_in_words(synonym, words[field]))
+                term_score += weight * score
+            if term_score > 0:
+                matched += 1
+                total += term_score
+        if not matched:
+            return 0.0
+        return total * matched / len(terms)
+
+    @classmethod
+    def search(cls, search_terms, include_private=False):
+        """Find the pages matching a search string, best match first.
+
+        Returns a list of (page, score) pairs, highest score first and,
+        within an equal score, by title.
+        """
+        terms = tokenize(search_terms)
+        if not terms:
+            return []
+        synonyms = parse_synonyms(Options.get_search_synonyms())
+        query = cls.query
+        if not include_private:
+            query = query.filter_by(is_private=False)
+        results = []
+        for page in query:
+            score = page.get_search_score(terms, synonyms)
+            if score > 0:
+                results.append((page, score))
+        results.sort(key=lambda result: (-result[1], result[0].title or ''))
+        return results
+
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -370,6 +550,10 @@ class Options(object):
     def get_main_page():
         return Options.get('main_page')
 
+    @staticmethod
+    def get_search_synonyms():
+        return Options.get('search_synonyms')
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -412,6 +596,32 @@ def all_pages():
     pages = query
     return render_template("all_pages.html", pages=pages, pager=pager,
                            page_links_endpoint='all_pages')
+
+
+def paginate_items(items, default_per_page=20):
+    """Paginate an in-memory list the way Query.paginate() does a query."""
+    page_num = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', default_per_page, type=int)
+    if page_num < 1:
+        page_num = 1
+    if per_page < 1:
+        per_page = default_per_page
+    offset = (page_num - 1) * per_page
+    return Pagination(None, page_num, per_page, len(items),
+                      items[offset:offset + per_page])
+
+
+@app.route('/search')
+def search():
+    search_terms = request.args.get('q', '').strip()
+    results = Page.search(
+        search_terms, include_private=current_user.is_authenticated)
+    pages = [page for page, _ in results]
+    pager = paginate_items(pages)
+    return render_template("search.html", config=Config,
+                           search_terms=search_terms, pager=pager,
+                           page_links_endpoint='search',
+                           page_links_args={'q': search_terms})
 
 
 @app.route('/login', methods=['GET', 'POST'])
