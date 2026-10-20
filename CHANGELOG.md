@@ -6,10 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Documentation: the repository now explains itself, to contributors and to AI
-coding agents, and records what changed in each release.
+Pages can be searched for, and the repository now explains itself, to
+contributors and to AI coding agents, and records what changed in each
+release.
 
 ### Added
+
+- **Full-text search** ([#40](https://github.com/izrik/stuart/issues/40)). A
+  search box in the navbar leads to a new `/search` page that ranks pages by
+  how well they match what was typed. Titles, content, notes and tag names
+  are all searched, weighted in that order, and the matching is forgiving:
+  terms match a different inflection of the same word ("baking" finds
+  "bake"), a prefix ("markd" finds "Markdown") and a close enough spelling,
+  so a typo still finds the page. Pages matching more of the terms rank
+  above pages matching fewer, and private pages appear only for a logged-in
+  user. Setting the new `search_synonyms` option — for example
+  `--set-option search_synonyms "cat, feline; dog, canine"` — makes the
+  listed words find each other too.
 
 - **Documentation for contributors and coding agents**
   ([#36](https://github.com/izrik/stuart/issues/36),

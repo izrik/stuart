@@ -288,6 +288,497 @@ class PageTest(unittest.TestCase):
         self.assertEqual('title-1', slug)
 
 
+class TokenizeTest(unittest.TestCase):
+    def test_splits_on_non_word_characters(self):
+        # when
+        result = stuart.tokenize('one, two.three  four')
+
+        # then
+        self.assertEqual(['one', 'two', 'three', 'four'], result)
+
+    def test_lower_cases_words(self):
+        # when
+        result = stuart.tokenize('One TWO tHrEe')
+
+        # then
+        self.assertEqual(['one', 'two', 'three'], result)
+
+    def test_keeps_digits(self):
+        # when
+        result = stuart.tokenize('page 42 of x3')
+
+        # then
+        self.assertEqual(['page', '42', 'of', 'x3'], result)
+
+    def test_empty_values(self):
+        # expect
+        self.assertEqual([], stuart.tokenize(''))
+        self.assertEqual([], stuart.tokenize(None))
+        self.assertEqual([], stuart.tokenize('  ,. '))
+
+
+class WordVariantsTest(unittest.TestCase):
+    def test_word_is_always_a_variant_of_itself(self):
+        # expect
+        self.assertIn('page', stuart.word_variants('page'))
+
+    def test_plural_shares_a_variant_with_singular(self):
+        # expect
+        self.assertTrue(
+            stuart.word_variants('pages') & stuart.word_variants('page'))
+
+    def test_y_plural_shares_a_variant_with_singular(self):
+        # expect
+        self.assertTrue(
+            stuart.word_variants('stories') & stuart.word_variants('story'))
+
+    def test_verb_endings_share_a_variant(self):
+        # expect
+        self.assertTrue(
+            stuart.word_variants('searching') & stuart.word_variants('search'))
+        self.assertTrue(
+            stuart.word_variants('searched') &
+            stuart.word_variants('searches'))
+        self.assertTrue(
+            stuart.word_variants('writing') & stuart.word_variants('write'))
+
+    def test_unrelated_words_share_no_variant(self):
+        # expect
+        self.assertFalse(
+            stuart.word_variants('pages') & stuart.word_variants('tags'))
+
+    def test_short_stems_are_not_generated(self):
+        # when a word would stem to fewer than three characters
+        result = stuart.word_variants('ads')
+
+        # then only the word itself is a variant of it
+        self.assertEqual({'ads'}, result)
+
+
+class ScoreTermInWordsTest(unittest.TestCase):
+    def test_exact_match_scores_highest(self):
+        # when
+        result = stuart.score_term_in_words('alpha', ['beta', 'alpha'])
+
+        # then
+        self.assertEqual(1.0, result)
+
+    def test_no_words_scores_zero(self):
+        # expect
+        self.assertEqual(0.0, stuart.score_term_in_words('alpha', []))
+
+    def test_unrelated_words_score_zero(self):
+        # expect
+        self.assertEqual(
+            0.0, stuart.score_term_in_words('alpha', ['something', 'else']))
+
+    def test_different_inflection_scores_below_exact_match(self):
+        # when
+        result = stuart.score_term_in_words('searching', ['searches'])
+
+        # then
+        self.assertEqual(stuart.SEARCH_STEM_SCORE, result)
+
+    def test_prefix_scores_below_a_shared_stem(self):
+        # when
+        result = stuart.score_term_in_words('mark', ['markdown'])
+
+        # then
+        self.assertEqual(stuart.SEARCH_PREFIX_SCORE, result)
+
+    def test_misspelling_scores_something(self):
+        # when a term is misspelled
+        result = stuart.score_term_in_words('kitchin', ['kitchen'])
+
+        # then it still matches, but below an exact match
+        self.assertGreater(result, 0.0)
+        self.assertLess(result, 1.0)
+
+    def test_best_of_several_words_is_used(self):
+        # when one word matches exactly and another only loosely
+        result = stuart.score_term_in_words('kitchen', ['kitchin', 'kitchen'])
+
+        # then the better match decides the score
+        self.assertEqual(1.0, result)
+
+    def test_short_terms_are_not_treated_as_prefixes(self):
+        # when a term is shorter than three characters
+        result = stuart.score_term_in_words('ab', ['abcdefg'])
+
+        # then it does not match as a prefix of a much longer word
+        self.assertEqual(0.0, result)
+
+
+class ParseSynonymsTest(unittest.TestCase):
+    def test_empty_values(self):
+        # expect
+        self.assertEqual({}, stuart.parse_synonyms(''))
+        self.assertEqual({}, stuart.parse_synonyms(None))
+
+    def test_single_group(self):
+        # when
+        result = stuart.parse_synonyms('cat, feline')
+
+        # then each word maps to the others in its group
+        self.assertEqual({'cat': {'feline'}, 'feline': {'cat'}}, result)
+
+    def test_several_groups(self):
+        # when
+        result = stuart.parse_synonyms('cat, feline; dog, canine, hound')
+
+        # then
+        self.assertEqual({'cat'}, result['feline'])
+        self.assertEqual({'canine', 'hound'}, result['dog'])
+
+    def test_groups_separated_by_newlines(self):
+        # when
+        result = stuart.parse_synonyms('cat, feline\ndog, canine')
+
+        # then the groups are kept apart
+        self.assertEqual({'feline'}, result['cat'])
+        self.assertEqual({'canine'}, result['dog'])
+
+
+class SearchTest(unittest.TestCase):
+    def setUp(self):
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        app.config['TESTING'] = True
+        self.cl = app.test_client()
+        app.testing = True
+        with app.app_context():
+            app.db.create_all()
+
+    def tearDown(self):
+        app.db.session.rollback()
+        app.db.drop_all()
+
+    def add_page(self, title, content='content', is_private=False, notes=None,
+                 tags=()):
+        page = stuart.Page(title, content, datetime(2017, 1, 1), is_private,
+                           notes)
+        for name in tags:
+            page.tags.append(stuart.Tag(name))
+        app.db.session.add(page)
+        app.db.session.commit()
+        return page
+
+    def search(self, search_terms, include_private=False):
+        results = stuart.Page.search(search_terms,
+                                     include_private=include_private)
+        return [page for page, _ in results]
+
+    def test_empty_query_finds_nothing(self):
+        # given
+        self.add_page('title')
+
+        # expect
+        self.assertEqual([], stuart.Page.search(''))
+        self.assertEqual([], stuart.Page.search('   '))
+
+    def test_matches_on_title(self):
+        # given
+        page = self.add_page('Lemon Cake', 'nothing relevant here')
+        self.add_page('Something Else', 'nor here')
+
+        # when
+        results = self.search('lemon')
+
+        # then
+        self.assertEqual([page], results)
+
+    def test_matches_on_content(self):
+        # given
+        page = self.add_page('Some Title', 'a recipe for lemon cake')
+        self.add_page('Another Title', 'nothing relevant here')
+
+        # when
+        results = self.search('lemon')
+
+        # then
+        self.assertEqual([page], results)
+
+    def test_matches_on_notes(self):
+        # given
+        page = self.add_page('Some Title', 'content',
+                             notes='remember the lemons')
+        self.add_page('Another Title', 'content')
+
+        # when
+        results = self.search('lemon')
+
+        # then
+        self.assertEqual([page], results)
+
+    def test_matches_on_tags(self):
+        # given
+        page = self.add_page('Some Title', 'content', tags=['lemon'])
+        self.add_page('Another Title', 'content')
+
+        # when
+        results = self.search('lemon')
+
+        # then
+        self.assertEqual([page], results)
+
+    def test_matches_a_misspelled_term(self):
+        # given
+        page = self.add_page('Lemon Cake')
+
+        # when the query is misspelled
+        results = self.search('lemmon')
+
+        # then the page is still found
+        self.assertEqual([page], results)
+
+    def test_matches_a_different_inflection(self):
+        # given
+        page = self.add_page('Baking Cakes')
+
+        # when
+        results = self.search('bake cake')
+
+        # then
+        self.assertEqual([page], results)
+
+    def test_matches_a_prefix(self):
+        # given
+        page = self.add_page('Markdown Syntax')
+
+        # when
+        results = self.search('markd')
+
+        # then
+        self.assertEqual([page], results)
+
+    def test_title_match_outranks_content_match(self):
+        # given a page with the term in its content
+        content_match = self.add_page('Unrelated', 'all about lemons')
+        # and a page with the term in its title
+        title_match = self.add_page('Lemons', 'unrelated content')
+
+        # when
+        results = self.search('lemons')
+
+        # then the title match comes first
+        self.assertEqual([title_match, content_match], results)
+
+    def test_matching_more_terms_outranks_matching_fewer(self):
+        # given a page matching one term
+        one = self.add_page('Lemon', 'unrelated content')
+        # and a page matching both
+        both = self.add_page('Lemon Cake', 'unrelated content')
+
+        # when
+        results = self.search('lemon cake')
+
+        # then the page matching both terms comes first
+        self.assertEqual([both, one], results)
+
+    def test_equal_scores_are_ordered_by_title(self):
+        # given two pages that match equally well
+        beta = self.add_page('Beta Lemon')
+        alpha = self.add_page('Alpha Lemon')
+
+        # when
+        results = self.search('lemon')
+
+        # then they are ordered by title
+        self.assertEqual([alpha, beta], results)
+
+    def test_private_pages_are_excluded_by_default(self):
+        # given
+        public = self.add_page('Public Lemons')
+        self.add_page('Private Lemons', is_private=True)
+
+        # when
+        results = self.search('lemons')
+
+        # then
+        self.assertEqual([public], results)
+
+    def test_private_pages_are_included_when_asked_for(self):
+        # given
+        self.add_page('Public Lemons')
+        self.add_page('Private Lemons', is_private=True)
+
+        # when
+        results = self.search('lemons', include_private=True)
+
+        # then
+        self.assertEqual(2, len(results))
+
+    def test_no_matches(self):
+        # given
+        self.add_page('Lemon Cake')
+
+        # when
+        results = self.search('bicycle')
+
+        # then
+        self.assertEqual([], results)
+
+    def test_synonyms_are_matched_when_the_site_defines_them(self):
+        # given a page that uses one word
+        page = self.add_page('Feline Behavior')
+
+        # precondition: a search for an unrelated synonym finds nothing
+        self.assertEqual([], self.search('cat'))
+
+        # when the site declares the two words equivalent
+        app.db.session.add(stuart.Option('search_synonyms', 'cat, feline'))
+        app.db.session.commit()
+
+        # then the page is found by either word
+        self.assertEqual([page], self.search('cat'))
+
+    def test_synonym_match_scores_below_a_direct_match(self):
+        # given
+        app.db.session.add(stuart.Option('search_synonyms', 'cat, feline'))
+        direct = self.add_page('Cat')
+        synonym = self.add_page('Feline')
+        app.db.session.commit()
+
+        # when
+        results = self.search('cat')
+
+        # then the page that uses the term itself comes first
+        self.assertEqual([direct, synonym], results)
+
+
+class SearchRouteTest(unittest.TestCase):
+    def setUp(self):
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        app.config['TESTING'] = True
+        self.cl = app.test_client()
+        app.testing = True
+        with app.app_context():
+            app.db.create_all()
+
+    def tearDown(self):
+        app.db.session.rollback()
+        app.db.drop_all()
+
+    def test_search_finds_a_matching_page(self):
+        # given
+        page = stuart.Page('Lemon Cake', 'a recipe', datetime(2017, 1, 1))
+        app.db.session.add(page)
+        app.db.session.commit()
+
+        # when
+        resp = self.cl.get('/search?q=lemon')
+
+        # then
+        self.assertEqual(200, resp.status_code)
+        self.assertIn('Lemon Cake', resp.get_data(as_text=True))
+
+    def test_search_without_terms_prompts_for_them(self):
+        # when
+        resp = self.cl.get('/search')
+
+        # then
+        self.assertEqual(200, resp.status_code)
+        self.assertIn('Enter something to search for',
+                      resp.get_data(as_text=True))
+
+    def test_search_without_matches_says_so(self):
+        # given
+        page = stuart.Page('Lemon Cake', 'a recipe', datetime(2017, 1, 1))
+        app.db.session.add(page)
+        app.db.session.commit()
+
+        # when
+        resp = self.cl.get('/search?q=bicycle')
+
+        # then
+        self.assertEqual(200, resp.status_code)
+        self.assertIn('No pages found', resp.get_data(as_text=True))
+
+    def test_search_hides_private_pages_from_anonymous_users(self):
+        # given
+        page = stuart.Page('Lemon Cake', 'a recipe', datetime(2017, 1, 1),
+                           is_private=True)
+        app.db.session.add(page)
+        app.db.session.commit()
+
+        # when an anonymous user searches
+        resp = self.cl.get('/search?q=lemon')
+
+        # then the private page is not among the results
+        self.assertEqual(200, resp.status_code)
+        self.assertIn('No pages found', resp.get_data(as_text=True))
+
+    def test_search_results_are_paginated(self):
+        # given more pages than fit on one page of results
+        for i in range(3):
+            app.db.session.add(stuart.Page('Lemon {}'.format(i), 'a recipe',
+                                           datetime(2017, 1, 1)))
+        app.db.session.commit()
+
+        # when the second page of results is requested
+        resp = self.cl.get('/search?q=lemon&per_page=2&page=2')
+
+        # then it holds the leftover result, and the pagination links keep
+        # the search terms
+        self.assertEqual(200, resp.status_code)
+        text = resp.get_data(as_text=True)
+        self.assertIn('Lemon 2', text)
+        self.assertNotIn('Lemon 0', text)
+        self.assertIn('q=lemon', text)
+
+    def test_search_box_is_in_the_navbar(self):
+        # when any page is requested
+        resp = self.cl.get('/all-pages')
+
+        # then it has a search box
+        self.assertEqual(200, resp.status_code)
+        self.assertIn('name="q"', resp.get_data(as_text=True))
+
+
+class PaginateItemsTest(unittest.TestCase):
+    def setUp(self):
+        app.config['TESTING'] = True
+        app.testing = True
+
+    def paginate(self, items, query_string=''):
+        with app.test_request_context('/search?' + query_string):
+            return stuart.paginate_items(items)
+
+    def test_first_page_by_default(self):
+        # when
+        pager = self.paginate(list(range(5)))
+
+        # then
+        self.assertEqual(1, pager.page)
+        self.assertEqual([0, 1, 2, 3, 4], pager.items)
+        self.assertEqual(5, pager.total)
+
+    def test_requested_page_and_size(self):
+        # when
+        pager = self.paginate(list(range(5)), 'page=2&per_page=2')
+
+        # then
+        self.assertEqual([2, 3], pager.items)
+        self.assertEqual(3, pager.pages)
+        self.assertTrue(pager.has_prev)
+        self.assertTrue(pager.has_next)
+
+    def test_invalid_values_fall_back_to_defaults(self):
+        # when
+        pager = self.paginate(list(range(5)), 'page=0&per_page=0')
+
+        # then
+        self.assertEqual(1, pager.page)
+        self.assertEqual(20, pager.per_page)
+        self.assertEqual([0, 1, 2, 3, 4], pager.items)
+
+    def test_page_past_the_end_is_empty(self):
+        # when
+        pager = self.paginate(list(range(5)), 'page=9&per_page=2')
+
+        # then
+        self.assertEqual([], pager.items)
+
+
 class CreateDbTest(unittest.TestCase):
     def test_create_db_command(self):
         # given an app with uninitialize database

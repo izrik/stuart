@@ -1,0 +1,65 @@
+{# stuart - a python wiki system
+   Copyright (C) 2016-2022 izrik
+
+   This file is a part of stuart.
+
+   Stuart is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   Stuart is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with stuart.  If not, see <http://www.gnu.org/licenses/>.
+#}
+
+{% extends 'base.html' %}
+{% block title %}{{ super() }} - Search{% endblock %}
+{% block content %}
+
+<div class="container">
+    <h1 class="search-heading">
+        {% if search_terms %}
+            Search results for &ldquo;{{ search_terms }}&rdquo;
+        {% else %}
+            Search
+        {% endif %}
+    </h1>
+
+    {% if not search_terms %}
+        <p class="search-prompt">Enter something to search for. Page titles,
+        content, notes and tags are all searched, and close spellings count
+        as matches.</p>
+    {% else %}
+    <div class="search-page-list">
+    {% set index = Options.seq().__next__ %}
+    {% set odd_even = Options.cycle(['odd', 'even']).__next__ %}
+    {% for page in pager.items %}
+        <div class="search-page search-page-id-{{page.id}} search-page-index-{{index()}} search-page-{{odd_even()}}">
+            <a href="{{ url_for('get_page', slug=page.slug) }}">
+                <h2>{{ page.title }}{% if page.is_private%} <small>(Private)</small>{% endif %}</h2>
+            </a>
+            <p>{{ page.date.strftime('%Y-%m-%d') }} - {{ Options.get_author() }}</p>
+            <blockquote>{{ page.summary if page.summary }}</blockquote>
+            {% if page.tags %}
+            <p class="search-page-tags">
+                {% for tag in page.tags %}
+                <a href="{{ url_for('get_tag', tag_id=tag.id) }}">{{ tag.name }}</a>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            {% endif %}
+            <hr/>
+        </div>
+    {% else %}
+        <p>No pages found</p>
+    {% endfor %}
+    {% include 'page_links.fragment.html' %}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
