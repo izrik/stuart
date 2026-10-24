@@ -40,10 +40,16 @@ coding agents, and records what changed in each release.
 
 ### Changed
 
-- GitPython upgraded from 3.1.18 to 3.1.31
-  ([#34](https://github.com/izrik/stuart/pull/34)). Stuart uses it only to
+- **GitPython upgraded from 3.1.18 to 3.2.1**
+  ([#34](https://github.com/izrik/stuart/pull/34),
+  [#50](https://github.com/izrik/stuart/issues/50)). Stuart uses it only to
   report the git revision in the page footer, and treats it as optional, but
-  3.1.31 is what the Docker image installs.
+  3.1.31 is subject to a long list of security advisories — one of them
+  critical — that Dependabot reports against the pin. 3.2.1 is the current
+  release and none of them apply to it. Along the way, 3.2.0 drops Python
+  3.7, five years after its end of life (Stuart is on 3.11), and deprecates
+  the pure-Python `GitDB` object database backend, which Stuart never
+  selects; nothing Stuart calls changed.
 
 - **Python 3.11 replaces Python 3.8**
   ([#45](https://github.com/izrik/stuart/issues/45)). The Docker base image
