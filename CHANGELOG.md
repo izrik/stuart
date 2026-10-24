@@ -11,6 +11,24 @@ coding agents, and records what changed in each release.
 
 ### Added
 
+- **A security policy**
+  ([#52](https://github.com/izrik/stuart/issues/52)).
+  [`SECURITY.md`](SECURITY.md) says where to send a vulnerability report —
+  GitHub's private vulnerability reporting, or the maintainer directly, and
+  explicitly not a public issue — what is in scope, and what a reporter can
+  expect. It promises no bounty and no response time, because there is
+  nobody on the hook for either. Supported versions are the latest release
+  and `master`; there are no maintained release branches.
+
+- **Weekly Dependabot updates**
+  ([#52](https://github.com/izrik/stuart/issues/52)).
+  [`.github/dependabot.yml`](.github/dependabot.yml) watches the two
+  ecosystems the repository declares, `pip` and `npm`. A `pip-audit` check
+  in CI is deliberately *not* part of this: the current pins carry open
+  advisories, and a job that is red on `master` from its first run would
+  block every unrelated pull request. It waits on
+  [#53](https://github.com/izrik/stuart/issues/53).
+
 - **Documentation for contributors and coding agents**
   ([#36](https://github.com/izrik/stuart/issues/36),
   [#37](https://github.com/izrik/stuart/pull/37)).

@@ -51,6 +51,8 @@ See [docs/configuration.md](docs/configuration.md) for all options.
   variable and command-line argument
 - [CHANGELOG.md](CHANGELOG.md) — what changed in each release
 - [CLAUDE.md](CLAUDE.md) — architecture and the development workflow
+- [SECURITY.md](SECURITY.md) — how to report a vulnerability. Please don't
+  open a public issue for one
 
 ## Docker
 

@@ -1,0 +1,25 @@
+---
+# Dependabot watches the two ecosystems this repository declares, weekly.
+# Weekly rather than daily on purpose: a daily stream of pull requests on a
+# spare-time project is how the updates stop being read.
+#
+# GitHub Actions is deliberately absent. Every action in
+# .github/workflows/ci.yml is pinned to a moving major tag (@v4, @v5), which
+# already picks up patch releases, so Dependabot would only ever open major
+# version bumps for them.
+version: 2
+updates:
+  - package-ecosystem: pip
+    # requirements.txt and dev_requirements.txt, both at the root.
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: npm
+    # package.json and package-lock.json: the Markdown, CSS and Dockerfile
+    # linters, all development-only.
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

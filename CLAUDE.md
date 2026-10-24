@@ -103,7 +103,35 @@ Two steps of the local script are deliberately *not* in CI: `safety check`
 needs an account with an external service, and `coveralls` needs a repository
 token. `coverage html` is skipped too — it only writes a local HTML report.
 
+## Security
+
+[SECURITY.md](SECURITY.md) is where a vulnerability report goes: GitHub's
+private vulnerability reporting, or the maintainer directly — not a public
+issue. If you find a security problem in this repository while working on
+something else, that's the path for it, and the finding doesn't belong in a
+commit message or a public issue until it's fixed.
+
+Two things follow from that for ordinary changes:
+
+- **Never commit a credential**, not even an expired or obviously fake one
+  in a test fixture. `.gitignore` already covers `.env` and local `*.db`
+  files; example and config values stay placeholders.
+- **Workflows get the narrowest token that works.**
+  [`.github/workflows/ci.yml`](.github/workflows/ci.yml) declares
+  `permissions: contents: read` at the top level. A job that needs more
+  gets its own `permissions:` block with just what it needs, rather than
+  widening the top-level one. Don't interpolate untrusted text — a pull
+  request title, a branch name, an issue body — into a `run:` step; pass it
+  through `env:` and reference the variable.
+
+Dependabot watches `requirements.txt`, `dev_requirements.txt` and
+`package.json` weekly ([`.github/dependabot.yml`](.github/dependabot.yml)).
+There is no `pip-audit` job in CI yet — see
+[#53](https://github.com/izrik/stuart/issues/53), which has to clear the
+open advisories against the current pins first.
+
 ## Further Documentation
 
 - [Configuration](docs/configuration.md) — all environment variables and CLI options
 - [Changelog](CHANGELOG.md) — what changed in each release
+- [Security policy](SECURITY.md) — how to report a vulnerability
