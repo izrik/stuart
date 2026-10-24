@@ -72,6 +72,38 @@ coding agents, and records what changed in each release.
   `werkzeug.urls.url_quote` or `markdown.util.etree`. Both are now pinned,
   to Werkzeug 2.0.1 and Markdown 3.2.2.
 
+### Security
+
+- **GitPython upgraded from 3.1.31 to 3.2.1**
+  ([#50](https://github.com/izrik/stuart/issues/50),
+  [#53](https://github.com/izrik/stuart/issues/53)). This clears 48 of the
+  74 findings `pip-audit -r requirements.txt -r dev_requirements.txt`
+  reported against the pinned dependencies, among them two critical ones.
+  3.2.1 is the lowest release that clears all of them —
+  [CVE-2026-114145](https://osv.dev/vulnerability/CVE-2026-114145) is not
+  fixed anywhere in the 3.1 series. Stuart uses GitPython only to report
+  the git revision in the page footer, and treats it as optional, so the
+  upgrade touches no application code.
+
+- **The lint tooling's npm dependencies refreshed**
+  ([#53](https://github.com/izrik/stuart/issues/53)). `brace-expansion`
+  1.1.11 to 1.1.21, `js-yaml` 4.1.0 to 4.3.2 and `minimatch` 3.0.8 to
+  3.1.5, all development-only and all by way of `npm audit fix` rather than
+  by hand. `minimatch` needed a narrow `overrides` entry in
+  `package.json`, because markdownlint-cli 0.31.1 asks for `~3.0.5` and no
+  3.0.x release clears the advisories; that entry can go away when
+  markdownlint-cli is bumped
+  ([#59](https://github.com/izrik/stuart/issues/59)).
+
+- **The advisories that remain are recorded next to the pins they belong
+  to** ([#53](https://github.com/izrik/stuart/issues/53)). The `Flask`,
+  `Werkzeug` and `Markdown` pins in `requirements.txt` now carry the
+  advisory IDs they are held back against and a link to the issue tracking
+  each: Flask and Werkzeug in
+  [#57](https://github.com/izrik/stuart/issues/57), Markdown in
+  [#58](https://github.com/izrik/stuart/issues/58). Nothing was silenced to
+  get there.
+
 ## [v0.7] - 2022-05-16
 
 Logging in becomes per-user. The single site-wide password is replaced by
