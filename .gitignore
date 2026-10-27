@@ -57,6 +57,13 @@ local_settings.py
 instance/
 .webassets-cache
 
+# Local SQLite databases. The quick start in README.md tells a developer to
+# create wiki.db in the repository root, and it holds user rows with bcrypt
+# password hashes in them.
+*.db
+*.sqlite
+*.sqlite3
+
 # Scrapy stuff:
 .scrapy
 
