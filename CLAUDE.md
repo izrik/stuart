@@ -11,8 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Stuart targets Python 3.11 — the version the [`Dockerfile`](Dockerfile) and
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) pin. Every version in
 `requirements.txt` is pinned exactly, including `Werkzeug` and `Markdown`.
-Werkzeug is held back because Flask 2.0.1 imports APIs removed in Werkzeug
-3.0; upgrade those two together. Markdown uses maintained PyMdown extensions.
+Upgrade Flask and Werkzeug together. Markdown uses maintained PyMdown extensions.
+Database operations outside requests require an `app.app_context()`.
 
 ```bash
 # Setup

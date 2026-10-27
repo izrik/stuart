@@ -23,13 +23,13 @@ import argparse
 from datetime import datetime
 from itertools import cycle
 from os import environ
+from pathlib import Path
 import random
 import re
 
 import dateutil.parser
 from flask import flash
 from flask import Flask
-from flask import Markup
 from flask import redirect
 from flask import render_template
 from flask import request
@@ -43,6 +43,8 @@ from flask_login import logout_user
 from flask_sqlalchemy import SQLAlchemy
 import jinja2
 import markdown
+from markupsafe import Markup
+from sqlalchemy.engine import make_url
 from slugify import slugify
 from werkzeug.exceptions import BadRequest
 from werkzeug.exceptions import NotFound
@@ -186,7 +188,13 @@ elif Config.DB_URI_FILE:
     except Exception as e:
         raise ConfigError(
             f'Error opening uri file "{Config.DB_URI_FILE}": {e}')
-app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+# Preserve Flask-SQLAlchemy 2.x resolution relative to the application root.
+url = make_url(db_uri)
+if (url.drivername.startswith('sqlite') and url.database
+        and url.database != ':memory:'
+        and not Path(url.database).is_absolute()):
+    url = url.set(database=str(Path(app.root_path) / url.database))
+app.config['SQLALCHEMY_DATABASE_URI'] = url
 
 app.config['APPLICATION_ROOT'] = Config.PATH_PREFIX
 
@@ -327,7 +335,7 @@ class Option(db.Model):
 class Options(object):
     @staticmethod
     def get(key, default_value=None):
-        option = Option.query.get(key)
+        option = db.session.get(Option, key)
         if option is None:
             return default_value
         return option.value
@@ -372,7 +380,7 @@ class Options(object):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(user_id)
+    return db.session.get(User, user_id)
 
 
 @app.context_processor
@@ -548,7 +556,7 @@ def list_tags():
 
 @app.route('/tags/<tag_id>', methods=['GET'])
 def get_tag(tag_id):
-    tag = Tag.query.get(tag_id)
+    tag = db.session.get(Tag, tag_id)
     query = tag.pages
     if not current_user.is_authenticated:
         query = query.filter_by(is_private=False)
@@ -585,7 +593,7 @@ def hash_password(unhashed_password):
 
 
 def reset_slug(page_id):
-    page = Page.query.get(page_id)
+    page = db.session.get(Page, page_id)
     if not page:
         msg = 'No page found with id {}'.format(page_id)
         raise NotFound(msg)
@@ -621,6 +629,16 @@ def run():
         print('Secret Key: {}'.format(Config.SECRET_KEY))
     print('Local Resources: {}'.format(Config.LOCAL_RESOURCES))
 
+    with app.app_context():
+        if run_command():
+            return
+    run_simple(hostname=Config.HOST, port=Config.PORT,
+               application=gapp,
+               use_debugger=Config.DEBUG, use_reloader=Config.DEBUG,
+               passthrough_errors=True)
+
+
+def run_command():
     if args.create_db:
         cmd_create_db()
     elif args.hash_password is not None:
@@ -632,7 +650,7 @@ def run():
             print(e.description)
     elif args.set_date is not None:
         page_id, new_date = args.set_date
-        page = Page.query.get(page_id)
+        page = db.session.get(Page, page_id)
         if not page:
             print('No page found with id {}'.format(page_id))
             exit(1)
@@ -644,7 +662,7 @@ def run():
         print('New date is "{}"'.format(page.date))
     elif args.set_last_updated_date is not None:
         page_id, new_date = args.set_last_updated_date
-        page = Page.query.get(page_id)
+        page = db.session.get(Page, page_id)
         if not page:
             print('No page found with id {}'.format(page_id))
             exit(1)
@@ -656,7 +674,7 @@ def run():
         print('New last updated date is "{}"'.format(page.last_updated_date))
     elif args.reset_summary is not None:
         page_id = args.reset_summary
-        page = Page.query.get(page_id)
+        page = db.session.get(Page, page_id)
         if not page:
             print('No page found with id {}'.format(page_id))
             exit(1)
@@ -683,7 +701,7 @@ def run():
             print('No options found')
     elif args.set_option is not None:
         name, value = args.set_option
-        option = Option.query.get(name)
+        option = db.session.get(Option, name)
         if option:
             print('Setting the value for option {}'.format(name))
             print('Old value is "{}"'.format(option.value))
@@ -696,7 +714,7 @@ def run():
         print('New value is "{}"'.format(option.value))
     elif args.clear_option is not None:
         name = args.clear_option
-        option = Option.query.get(name)
+        option = db.session.get(Option, name)
         if not option:
             print('No option found with name {}'.format(name))
             exit(1)
@@ -712,12 +730,12 @@ def run():
         db.session.commit()
         print(f'Created user with email {email}')
     else:
-        run_simple(hostname=Config.HOST, port=Config.PORT,
-                   application=gapp,
-                   use_debugger=Config.DEBUG, use_reloader=Config.DEBUG,
-                   passthrough_errors=True)
+        return False
+    return True
 
 
-cmd_create_db()
+with app.app_context():
+    cmd_create_db()
+
 if __name__ == "__main__":
     run()
