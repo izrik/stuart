@@ -99,6 +99,12 @@ coding agents, and records what changed in each release.
   remain supported. Generated HTML classes and list parsing can differ;
   custom themes targeting py-gfm's markup may need adjustment.
 
+- Upgrade Flask to 3.1.3 and Werkzeug to 3.1.9, clearing the 14 advisories
+  tracked in [#57](https://github.com/izrik/stuart/issues/57). Upgrade
+  Flask-Login to 0.6.3, Flask-SQLAlchemy to 3.1.1 and SQLAlchemy to 2.0.48
+  for compatibility. Existing relative SQLite paths keep their location;
+  no database schema migration is required.
+
 - **GitPython upgraded from 3.1.31 to 3.2.1**
   ([#50](https://github.com/izrik/stuart/issues/50),
   [#53](https://github.com/izrik/stuart/issues/53)). This clears 48 of the

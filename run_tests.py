@@ -5,13 +5,22 @@ from datetime import datetime
 import logging
 from html import unescape
 from html.parser import HTMLParser
+import os
+from pathlib import Path
+import secrets
+import subprocess
+import sys
+import tempfile
 import unittest
 
 from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import NotFound
 
-import stuart
-from stuart import app
+# Configure the engine before importing the application.
+os.environ['STUART_DB_URI'] = 'sqlite://'
+
+import stuart  # noqa: E402
+from stuart import app  # noqa: E402
 
 
 class RenderGfmTest(unittest.TestCase):
@@ -73,18 +82,23 @@ class RenderGfmTest(unittest.TestCase):
         self.assertIn('<code>~~literal~~ https://example.com</code>', output)
 
 
-class PageTest(unittest.TestCase):
+class DatabaseTestCase(unittest.TestCase):
     def setUp(self):
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        self.context = app.app_context()
+        self.context.push()
+        self.addCleanup(self.context.pop)
+        self.addCleanup(app.db.session.remove)
+        app.db.drop_all()
+        app.db.create_all()
         app.config['TESTING'] = True
         self.cl = app.test_client()
-        app.testing = True
-        with app.app_context():
-            app.db.create_all()
 
     def tearDown(self):
-        app.db.session.rollback()
+        app.db.session.remove()
+        app.db.drop_all()
 
+
+class PageTest(DatabaseTestCase):
     def test_init(self):
         # when a Page is created
         page = stuart.Page('title', 'content', datetime(2017, 1, 1))
@@ -349,13 +363,9 @@ class PageTest(unittest.TestCase):
         self.assertEqual('title-1', slug)
 
 
-class CreateDbTest(unittest.TestCase):
+class CreateDbTest(DatabaseTestCase):
     def test_create_db_command(self):
-        # given an app with uninitialize database
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
-        app.config['TESTING'] = True
-        self.cl = app.test_client()
-        app.testing = True
+        app.db.drop_all()
 
         # precondition: the database table have not been created yet
         self.assertRaises(OperationalError, stuart.Page.query.first)
@@ -363,7 +373,7 @@ class CreateDbTest(unittest.TestCase):
         self.assertRaises(OperationalError, stuart.Option.query.first)
 
         # when the create_db function is called
-        stuart.cmd_create_db()
+        stuart.cmd_create_db(_print=lambda message: None)
 
         # then the database tables are created
         self.assertIsNone(stuart.Page.query.first())
@@ -384,19 +394,7 @@ class HashPasswordTest(unittest.TestCase):
             stuart.bcrypt.check_password_hash(result, unhashed_password))
 
 
-class CliCommandsTest(unittest.TestCase):
-    def setUp(self):
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
-        app.config['TESTING'] = True
-        self.cl = app.test_client()
-        app.testing = True
-        with app.app_context():
-            app.db.create_all()
-
-    def tearDown(self):
-        app.db.session.rollback()
-        app.db.drop_all()
-
+class CliCommandsTest(DatabaseTestCase):
     def test_reset_slug(self):
         # given a page with a non-standard slug is put into the db
         page = stuart.Page('title', 'content', datetime(2017, 1, 1))
@@ -428,6 +426,57 @@ class CliCommandsTest(unittest.TestCase):
         # when the function is called with the id of a nonexistent page,
         # then an exception is thrown
         self.assertRaises(NotFound, stuart.reset_slug, 1)
+
+
+class WebTest(DatabaseTestCase):
+    def test_login_create_edit_and_logout(self):
+        password = secrets.token_urlsafe(24)
+        user = stuart.User(email='test@example.invalid',
+                           hashed_password=stuart.hash_password(password))
+        app.db.session.add(user)
+        app.db.session.commit()
+        self.assertEqual(self.cl.get('/new').status_code, 401)
+        response = self.cl.post('/login', data={
+            'email': user.email, 'password': password}, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        response = self.cl.post('/new', data={
+            'title': 'Upgrade test', 'content': '**Rendered**',
+            'notes': '', 'tags': 'upgrade', 'is_private': 'on'},
+            follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'<strong>Rendered</strong>', response.data)
+        page = stuart.Page.get_by_slug('upgrade-test')
+        tag_id = page.tags[0].id
+        for path in ['/all-pages', '/tags', f'/tags/{tag_id}',
+                     '/edit/upgrade-test']:
+            self.assertEqual(self.cl.get(path).status_code, 200)
+        response = self.cl.post('/edit/upgrade-test', data={
+            'title': 'Upgrade test', 'content': 'Updated',
+            'notes': '', 'tags': 'new tag', 'is_private': 'on'},
+            follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Updated', response.data)
+        self.cl.get('/logout')
+        self.assertEqual(self.cl.get('/page/upgrade-test').status_code, 401)
+        self.assertNotIn(b'Upgrade test', self.cl.get('/all-pages').data)
+
+
+class StartupTest(unittest.TestCase):
+    def test_cli_reopens_relative_sqlite_database(self):
+        root = Path(stuart.__file__).resolve().parent
+        with tempfile.TemporaryDirectory(dir=root) as directory:
+            relative = Path(directory).relative_to(root) / 'wiki.db'
+            command = [sys.executable, str(root / 'stuart.py'),
+                       '--db-uri', f'sqlite:///{relative}']
+            subprocess.run(command + ['--set-option', 'sitename', 'Upgrade'],
+                           check=True, capture_output=True)
+            self.assertTrue((root / relative).is_file())
+            result = subprocess.run(command + ['--list-options'], check=True,
+                                    capture_output=True, text=True)
+            self.assertIn('Upgrade', result.stdout)
+            self.assertNotIn('Creating default user', result.stdout)
+            subprocess.run(command + ['--clear-option', 'sitename'],
+                           check=True, capture_output=True)
 
 
 def run():
