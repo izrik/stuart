@@ -58,6 +58,13 @@ coding agents, and records what changed in each release.
 
 ### Changed
 
+- Replace Safety with `pip-audit -r requirements.txt -r dev_requirements.txt`
+  in the local check script ([#60](https://github.com/izrik/stuart/issues/60)).
+  The audit now checks declared dependencies and their resolved dependencies
+  against PyPI advisories instead of auditing the ambient environment with
+  Safety. Safety-only findings are no longer checked. Existing advisories
+  still fail the script; the coupled SQLAlchemy upgrade remains part of #57.
+
 - GitPython upgraded from 3.1.18 to 3.1.31
   ([#34](https://github.com/izrik/stuart/pull/34)). Stuart uses it only to
   report the git revision in the page footer, and treats it as optional, but
