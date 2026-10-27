@@ -73,7 +73,7 @@ static/            # CSS (Bootstrap + stuart.css)
 2. Implement the change
 3. Run tests: `python run_tests.py`. Better, run the whole local gate,
    `./run_tests_with_coverage.sh`, which is what CI checks (minus the two
-   steps that need credentials — see *Continuous integration* below).
+   steps omitted from CI — see *Continuous integration* below).
 4. Commit with a descriptive message. Add an entry under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) for anything a user or operator would notice — a new command, a changed default, a new environment variable, a fixed bug. Internal refactors with no outward effect need none.
 5. Push and open a pull request against `master`
 6. Address review feedback
@@ -99,9 +99,13 @@ checks one at a time, install the Python dependencies
 (`pip install -r requirements.txt -r dev_requirements.txt`) and the npm
 linters (`npm ci`), then run the commands in the table above.
 
-Two steps of the local script are deliberately *not* in CI: `safety check`
-needs an account with an external service, and `coveralls` needs a repository
-token. `coverage html` is skipped too — it only writes a local HTML report.
+The local script also runs `pip-audit -r requirements.txt -r dev_requirements.txt`
+to audit declared dependencies and their resolved dependencies, rather than the
+ambient environment. This replaces Safety and uses the PyPI advisory database;
+Safety-only findings are no longer checked. No account is required. The audit
+still fails on existing dependency advisories, and adding it to CI remains
+deferred until those are resolved. `coverage html` is also omitted from CI
+because it only writes a local HTML report.
 
 ## Security
 
