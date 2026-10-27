@@ -92,6 +92,13 @@ coding agents, and records what changed in each release.
 
 ### Security
 
+- **Markdown upgraded to 3.8.1**, clearing PYSEC-2026-89
+  ([#58](https://github.com/izrik/stuart/issues/58)). Unmaintained py-gfm is
+  replaced by Python-Markdown's built-in extensions and PyMdown Extensions.
+  Tables, line breaks, autolinks, task lists, strikethrough and fenced code
+  remain supported. Generated HTML classes and list parsing can differ;
+  custom themes targeting py-gfm's markup may need adjustment.
+
 - **GitPython upgraded from 3.1.31 to 3.2.1**
   ([#50](https://github.com/izrik/stuart/issues/50),
   [#53](https://github.com/izrik/stuart/issues/53)). This clears 48 of the

@@ -10,9 +10,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Stuart targets Python 3.11 — the version the [`Dockerfile`](Dockerfile) and
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) pin. Every version in
-`requirements.txt` is pinned exactly, including `Werkzeug` and `Markdown`,
-whose newer releases have dropped APIs that Flask 2.0.1 and py-gfm 1.0.2
-still import. Don't upgrade either on its own.
+`requirements.txt` is pinned exactly, including `Werkzeug` and `Markdown`.
+Werkzeug is held back because Flask 2.0.1 imports APIs removed in Werkzeug
+3.0; upgrade those two together. Markdown uses maintained PyMdown extensions.
 
 ```bash
 # Setup
@@ -59,7 +59,7 @@ static/            # CSS (Bootstrap + stuart.css)
 - `Tag` — content categorization, many-to-many with Page
 - `Option` — key-value settings stored in the database
 
-**Request flow:** Routes render Jinja2 templates with Page/Tag data. Content is rendered as GitHub Flavored Markdown via `py-gfm`. Login required for page creation/editing.
+**Request flow:** Routes render Jinja2 templates with Page/Tag data. Content is rendered as GitHub Flavored Markdown via Python-Markdown and PyMdown extensions. Login required for page creation/editing.
 
 ## Code Style
 
