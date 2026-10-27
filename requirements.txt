@@ -35,4 +35,4 @@ Werkzeug==2.0.1
 # Held back with a known advisory: pip-audit reports PYSEC-2026-89 against
 # this pin, fixed in 3.8.1. Clearing it means replacing or patching py-gfm
 # -- tracked in https://github.com/izrik/stuart/issues/58.
-Markdown==3.2.2
+Markdown==3.8.1
