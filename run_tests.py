@@ -3,6 +3,8 @@
 import argparse
 from datetime import datetime
 import logging
+from html import unescape
+from html.parser import HTMLParser
 import unittest
 
 from sqlalchemy.exc import OperationalError
@@ -10,6 +12,65 @@ from werkzeug.exceptions import NotFound
 
 import stuart
 from stuart import app
+
+
+class RenderGfmTest(unittest.TestCase):
+    def render(self, source):
+        return str(stuart.render_gfm(source))
+
+    def test_tables(self):
+        output = self.render('| Name | Value |\n| --- | --- |\n| item | 42 |')
+        self.assertIn('<th>Name</th>', output)
+        self.assertIn('<td>42</td>', output)
+        self.assertIn('<table>', output)
+
+    def test_strikethrough_and_literal_tilde(self):
+        output = self.render('~~removed~~ and H~2~O')
+        self.assertRegex(output, r'<(del|s)>removed</(del|s)>')
+        self.assertIn('H~2~O', output)
+
+    def test_task_lists(self):
+        output = self.render('- [x] done\n- [ ] pending')
+        inputs = []
+
+        class CheckboxParser(HTMLParser):
+            def handle_starttag(self, tag, attrs):
+                if tag == 'input':
+                    inputs.append(dict(attrs))
+
+        CheckboxParser().feed(output)
+        self.assertEqual(2, len(inputs))
+        self.assertIn('checked', inputs[0])
+        self.assertNotIn('checked', inputs[1])
+        for checkbox in inputs:
+            self.assertEqual('checkbox', checkbox.get('type'))
+            self.assertIn('disabled', checkbox)
+
+    def test_autolinks_and_email(self):
+        output = unescape(self.render(
+            'https://example.com/path and reader@example.com'))
+        self.assertIn('href="https://example.com/path"', output)
+        self.assertIn('href="mailto:reader@example.com"', output)
+
+    def test_fenced_code(self):
+        output = self.render('before\n```python\nprint("<tag>")\n```\nafter')
+        self.assertRegex(output, r'<pre[^>]*><code class="language-python">')
+        self.assertIn('&lt;tag&gt;', output)
+        self.assertIn('<p>before</p>', output)
+        self.assertIn('<p>after</p>', output)
+
+    def test_single_newlines(self):
+        self.assertEqual('<p>first<br />\nsecond</p>',
+                         self.render('first\nsecond'))
+
+    def test_separate_list_types(self):
+        output = self.render('- bullet\n\n1. numbered')
+        self.assertIn('<ul>', output)
+        self.assertIn('<ol>', output)
+
+    def test_inline_code_is_not_formatted(self):
+        output = self.render('`~~literal~~ https://example.com`')
+        self.assertIn('<code>~~literal~~ https://example.com</code>', output)
 
 
 class PageTest(unittest.TestCase):

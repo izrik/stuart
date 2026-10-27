@@ -41,7 +41,6 @@ from flask_login import login_user
 from flask_login import LoginManager
 from flask_login import logout_user
 from flask_sqlalchemy import SQLAlchemy
-import gfm  # noqa: F401
 import jinja2
 import markdown
 from slugify import slugify
@@ -383,9 +382,15 @@ def setup_options():
 
 @app.template_filter(name='gfm')
 def render_gfm(s):
-    from mdx_gfm import GithubFlavoredMarkdownExtension
     output = markdown.markdown(
-        s, extensions=[GithubFlavoredMarkdownExtension()])
+        s,
+        extensions=[
+            'tables', 'nl2br', 'sane_lists', 'fenced_code',
+            'pymdownx.magiclink', 'pymdownx.tasklist', 'pymdownx.tilde',
+        ],
+        # GFM uses double tildes for deletion; single tildes stay literal.
+        extension_configs={'pymdownx.tilde': {'subscript': False}},
+    )
     moutput = Markup(output)
     return moutput
 
