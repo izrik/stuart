@@ -23,6 +23,6 @@ python-dateutil==2.8.2
 # the lowest version clearing all of them is 3.1.9, which Flask 2.0.1
 # cannot import against. Clearing them means moving Flask too -- tracked
 # in https://github.com/izrik/stuart/issues/57. Don't bump this alone.
-Werkzeug==2.0.1
+Werkzeug==3.1.9
 
 Markdown==3.8.1
