@@ -37,7 +37,7 @@ Stuart is configured via environment variables (`STUART_*`) or command-line
 arguments. Common options:
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| --- | --- | --- |
 | `STUART_HOST` | `127.0.0.1` | IP to bind to |
 | `STUART_PORT` | `2512` | Port to listen on |
 | `STUART_DB_URI` | (none) | Database URI |
