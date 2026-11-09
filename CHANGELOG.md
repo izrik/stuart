@@ -11,6 +11,13 @@ coding agents, and records what changed in each release.
 
 ### Added
 
+- **Python dependency audit in CI**
+  ([#84](https://github.com/izrik/stuart/issues/84)). A separate job runs
+  `pip-audit -r requirements.txt -r dev_requirements.txt`, matching the
+  local check script and failing on published advisories without
+  suppressions. The npm gate is deferred until the development dependency
+  findings in [#85](https://github.com/izrik/stuart/issues/85) are resolved.
+
 - **A security policy**
   ([#52](https://github.com/izrik/stuart/issues/52)).
   [`SECURITY.md`](SECURITY.md) says where to send a vulnerability report —
@@ -23,11 +30,9 @@ coding agents, and records what changed in each release.
 - **Weekly Dependabot updates**
   ([#52](https://github.com/izrik/stuart/issues/52)).
   [`.github/dependabot.yml`](.github/dependabot.yml) watches the two
-  ecosystems the repository declares, `pip` and `npm`. A `pip-audit` check
-  in CI is deliberately *not* part of this: the current pins carry open
-  advisories, and a job that is red on `master` from its first run would
-  block every unrelated pull request. It waits on
-  [#53](https://github.com/izrik/stuart/issues/53).
+  ecosystems the repository declares, `pip` and `npm`. The Python CI audit
+  initially deferred behind [#53](https://github.com/izrik/stuart/issues/53)
+  is now included via #84.
 
 - **Documentation for contributors and coding agents**
   ([#36](https://github.com/izrik/stuart/issues/36),
