@@ -31,6 +31,7 @@ python run_tests.py
 python run_tests.py
 flake8 stuart.py run_tests.py
 shellcheck run_tests_with_coverage.sh
+pip-audit -r requirements.txt -r dev_requirements.txt
 npm ci
 ./node_modules/.bin/markdownlint README.md
 ./node_modules/.bin/csslint static/stuart.css
@@ -72,8 +73,8 @@ static/            # CSS (Bootstrap + stuart.css)
 1. Create a feature branch from `master` (use hyphens, not slashes: `feature-my-feature`)
 2. Implement the change
 3. Run tests: `python run_tests.py`. Better, run the whole local gate,
-   `./run_tests_with_coverage.sh`, which is what CI checks (minus the two
-   steps omitted from CI — see *Continuous integration* below).
+   `./run_tests_with_coverage.sh`, which is what CI checks (minus the
+   HTML report omitted from CI — see *Continuous integration* below).
 4. Commit with a descriptive message. Add an entry under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) for anything a user or operator would notice — a new command, a changed default, a new environment variable, a fixed bug. Internal refactors with no outward effect need none.
 5. Push and open a pull request against `master`
 6. Address review feedback
@@ -87,6 +88,7 @@ as a separate check, so a failure names itself:
 | Check | Command |
 | --- | --- |
 | Python tests | `python run_tests.py` |
+| Audit Python dependencies | `pip-audit -r requirements.txt -r dev_requirements.txt` |
 | Lint Python | `flake8 stuart.py run_tests.py` |
 | Lint shell | `shellcheck run_tests_with_coverage.sh` |
 | Lint Markdown | `./node_modules/.bin/markdownlint README.md` |
@@ -99,12 +101,11 @@ checks one at a time, install the Python dependencies
 (`pip install -r requirements.txt -r dev_requirements.txt`) and the npm
 linters (`npm ci`), then run the commands in the table above.
 
-The local script also runs `pip-audit -r requirements.txt -r dev_requirements.txt`
+Both CI and the local script run `pip-audit -r requirements.txt -r dev_requirements.txt`
 to audit declared dependencies and their resolved dependencies, rather than the
 ambient environment. This replaces Safety and uses the PyPI advisory database;
 Safety-only findings are no longer checked. No account is required. The audit
-still fails on existing dependency advisories, and adding it to CI remains
-deferred until those are resolved. `coverage html` is also omitted from CI
+fails on dependency advisories without suppressions. `coverage html` is omitted from CI
 because it only writes a local HTML report.
 
 ## Security
@@ -130,9 +131,9 @@ Two things follow from that for ordinary changes:
 
 Dependabot watches `requirements.txt`, `dev_requirements.txt` and
 `package.json` weekly ([`.github/dependabot.yml`](.github/dependabot.yml)).
-There is no `pip-audit` job in CI yet — see
-[#53](https://github.com/izrik/stuart/issues/53), which has to clear the
-open advisories against the current pins first.
+CI audits both Python manifests in a separate job. The npm audit gate remains
+deferred behind [#85](https://github.com/izrik/stuart/issues/85) until its
+development dependency advisories are resolved.
 
 ## Further Documentation
 
