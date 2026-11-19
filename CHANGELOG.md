@@ -11,6 +11,22 @@ coding agents, and records what changed in each release.
 
 ### Added
 
+- **A login form on the 401 page**
+  ([#47](https://github.com/izrik/stuart/issues/47)). Asking for a private
+  or login-only page without a session no longer serves a bare "401
+  Unauthorized": the response now carries the login form, with the url that
+  was asked for — query string included — kept in a hidden `next` field, and
+  logging in goes straight there instead of to the index. Previously an
+  expired session meant navigating away to the login page and then back by
+  hand. `/login?next=/some/page` works the same way, and either source of a
+  `next` url is honoured only when it is a path within the site, so it
+  cannot be used to bounce a reader off to another host.
+
+- **Flashed messages are displayed.** `base.html` now renders them, so
+  "Logged in successfully" and the login form's complaint about bad
+  credentials are actually shown; the app had been flashing messages that
+  no template ever printed.
+
 - **A security policy**
   ([#52](https://github.com/izrik/stuart/issues/52)).
   [`SECURITY.md`](SECURITY.md) says where to send a vulnerability report —
@@ -57,6 +73,13 @@ coding agents, and records what changed in each release.
   a pull request cannot have.
 
 ### Changed
+
+- **An unknown email address returns to the login form**
+  ([#47](https://github.com/izrik/stuart/issues/47)). It used to raise a
+  "400 Bad Request", a dead end that also meant the flashed error message
+  surfaced on some later page. Both it and a wrong password now come back
+  to the form with the same message, which keeps the two cases
+  indistinguishable to someone guessing at email addresses.
 
 - Replace Safety with `pip-audit -r requirements.txt -r dev_requirements.txt`
   in the local check script ([#60](https://github.com/izrik/stuart/issues/60)).

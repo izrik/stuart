@@ -427,25 +427,61 @@ def all_pages():
                            page_links_endpoint='all_pages')
 
 
+def get_safe_next_url(next_url):
+    """Return next_url if it is safe to redirect to, otherwise None.
+
+    Only paths within this app are safe. Anything that could send the
+    browser to another site -- an absolute url, a scheme-relative url like
+    "//example.com", or a backslash variant that some browsers normalize
+    into one -- is rejected.
+    """
+    if not next_url or not next_url.startswith('/'):
+        return None
+    if next_url.startswith('//') or '\\' in next_url:
+        return None
+    return next_url
+
+
+def get_current_url():
+    """The url of the current request, as a path within this app."""
+    url = request.script_root + request.path
+    if request.query_string:
+        url = '{}?{}'.format(url, request.query_string.decode('utf-8'))
+    return url
+
+
+@app.errorhandler(Unauthorized)
+def handle_unauthorized(e):
+    """Serve a login form in place of the generic 401 page.
+
+    Logging in from it comes back to the url that asked for credentials, so
+    an expired session doesn't cost the page the reader was after.
+    """
+    # Only a GET can be meaningfully repeated after logging in.
+    next_url = get_current_url() if request.method == 'GET' else None
+    return render_template('login.html', next_url=next_url,
+                           message='Please log in to view this page.'), 401
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        return render_template('login.html')
+        return render_template(
+            'login.html',
+            next_url=get_safe_next_url(request.args.get('next')))
 
+    next_url = get_safe_next_url(request.form.get('next'))
     email = request.form['email']
     password = request.form['password']
     user = User.query.filter_by(email=email).first()
-    if user is None:
-        flash('Password is invalid', 'error')
-        raise BadRequest
-    if not bcrypt.check_password_hash(user.hashed_password, password):
-        flash('Password is invalid', 'error')
-        return redirect(url_for('login'))
+    if user is None or not bcrypt.check_password_hash(user.hashed_password,
+                                                      password):
+        flash('Email address or password is invalid', 'error')
+        return redirect(url_for('login', next=next_url))
 
     login_user(user)
     flash('Logged in successfully')
-    # return redirect(request.args.get('next_url') or url_for('index'))
-    return redirect(url_for('index'))
+    return redirect(next_url or url_for('index'))
 
 
 @app.route('/page/<slug>', methods=['GET'])

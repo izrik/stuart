@@ -479,6 +479,166 @@ class StartupTest(unittest.TestCase):
                            check=True, capture_output=True)
 
 
+class GetSafeNextUrlTest(unittest.TestCase):
+    def test_path_within_the_app_is_safe(self):
+        self.assertEqual('/page/slug',
+                         stuart.get_safe_next_url('/page/slug'))
+
+    def test_query_string_is_kept(self):
+        self.assertEqual('/all-pages?page=2',
+                         stuart.get_safe_next_url('/all-pages?page=2'))
+
+    def test_empty_values_are_not_safe(self):
+        self.assertIsNone(stuart.get_safe_next_url(None))
+        self.assertIsNone(stuart.get_safe_next_url(''))
+
+    def test_relative_path_is_not_safe(self):
+        self.assertIsNone(stuart.get_safe_next_url('page/slug'))
+
+    def test_absolute_url_is_not_safe(self):
+        self.assertIsNone(
+            stuart.get_safe_next_url('http://example.com/page/slug'))
+
+    def test_scheme_relative_url_is_not_safe(self):
+        self.assertIsNone(stuart.get_safe_next_url('//example.com/'))
+
+    def test_backslashes_are_not_safe(self):
+        # Some browsers normalize these into a scheme-relative url
+        self.assertIsNone(stuart.get_safe_next_url('/\\example.com/'))
+        self.assertIsNone(stuart.get_safe_next_url('/\\/example.com/'))
+
+
+class LoginFormOnUnauthorizedTest(DatabaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.user = stuart.User(
+            email='user@example.com',
+            hashed_password=stuart.hash_password('correct horse'))
+        self.page = stuart.Page('Secret', 'content', datetime(2017, 1, 1),
+                                is_private=True)
+        app.db.session.add(self.user)
+        app.db.session.add(self.page)
+        app.db.session.commit()
+
+    def test_private_page_serves_a_login_form(self):
+        # when an anonymous visitor asks for a private page
+        resp = self.cl.get('/page/secret')
+
+        # then the response is a 401 carrying a login form that points back
+        # at the page that was asked for
+        self.assertEqual(401, resp.status_code)
+        self.assertIn(b'name="password"', resp.data)
+        self.assertIn(b'name="next" value="/page/secret"', resp.data)
+
+    def test_login_required_page_serves_a_login_form(self):
+        # when an anonymous visitor asks for a login-only page
+        resp = self.cl.get('/edit/secret')
+
+        # then the response is a 401 carrying a login form that points back
+        # at the page that was asked for
+        self.assertEqual(401, resp.status_code)
+        self.assertIn(b'name="next" value="/edit/secret"', resp.data)
+
+    def test_query_string_is_kept_in_the_next_url(self):
+        # when the url that was asked for has a query string
+        resp = self.cl.get('/page/secret?highlight=content')
+
+        # then the login form comes back to the url with it intact
+        self.assertEqual(401, resp.status_code)
+        self.assertIn(
+            b'name="next" value="/page/secret?highlight=content"', resp.data)
+
+    def test_login_form_on_a_get_has_no_next_url(self):
+        # when the login page is asked for directly
+        resp = self.cl.get('/login')
+
+        # then its form has no next url to come back to
+        self.assertEqual(200, resp.status_code)
+        self.assertNotIn(b'name="next"', resp.data)
+
+    def test_login_form_on_a_get_keeps_a_safe_next_url(self):
+        # when the login page is asked for with a next url
+        resp = self.cl.get('/login?next=%2Fpage%2Fsecret')
+
+        # then its form carries the next url
+        self.assertEqual(200, resp.status_code)
+        self.assertIn(b'name="next" value="/page/secret"', resp.data)
+
+    def test_login_form_on_a_get_drops_an_unsafe_next_url(self):
+        # when the login page is asked for with an off-site next url
+        resp = self.cl.get('/login?next=http%3A%2F%2Fexample.com%2F')
+
+        # then the next url is left out of the form
+        self.assertEqual(200, resp.status_code)
+        self.assertNotIn(b'name="next"', resp.data)
+
+    def test_logging_in_redirects_to_the_next_url(self):
+        # when the login form is submitted with a next url
+        resp = self.cl.post('/login', data={'email': 'user@example.com',
+                                            'password': 'correct horse',
+                                            'next': '/page/secret'})
+
+        # then the visitor is sent on to the page they asked for
+        self.assertEqual(302, resp.status_code)
+        self.assertTrue(resp.headers['Location'].endswith('/page/secret'),
+                        resp.headers['Location'])
+
+        # and the page is now theirs to read
+        resp = self.cl.get('/page/secret')
+        self.assertEqual(200, resp.status_code)
+        self.assertIn(b'Secret', resp.data)
+
+    def test_logging_in_without_a_next_url_redirects_to_the_index(self):
+        # when the login form is submitted without a next url
+        resp = self.cl.post('/login', data={'email': 'user@example.com',
+                                            'password': 'correct horse'})
+
+        # then the visitor lands on the index
+        self.assertEqual(302, resp.status_code)
+        self.assertTrue(resp.headers['Location'].endswith('/'),
+                        resp.headers['Location'])
+
+    def test_logging_in_ignores_an_unsafe_next_url(self):
+        # when the login form is submitted with an off-site next url
+        resp = self.cl.post('/login', data={'email': 'user@example.com',
+                                            'password': 'correct horse',
+                                            'next': 'http://example.com/'})
+
+        # then the visitor is not sent off-site
+        self.assertEqual(302, resp.status_code)
+        self.assertNotIn('example.com', resp.headers['Location'])
+
+    def test_a_bad_password_keeps_the_next_url(self):
+        # when the login form is submitted with the wrong password
+        resp = self.cl.post('/login', data={'email': 'user@example.com',
+                                            'password': 'wrong',
+                                            'next': '/page/secret'},
+                            follow_redirects=True)
+
+        # then the form comes back, still pointing at the page that was
+        # asked for, and says what went wrong
+        self.assertEqual(200, resp.status_code)
+        self.assertIn(b'name="next" value="/page/secret"', resp.data)
+        self.assertIn(b'Email address or password is invalid', resp.data)
+
+        # and the page is still not theirs to read
+        resp = self.cl.get('/page/secret')
+        self.assertEqual(401, resp.status_code)
+
+    def test_an_unknown_email_address_comes_back_to_the_form(self):
+        # when the login form is submitted with an email address that has
+        # no account
+        resp = self.cl.post('/login', data={'email': 'nobody@example.com',
+                                            'password': 'correct horse',
+                                            'next': '/page/secret'},
+                            follow_redirects=True)
+
+        # then the form comes back with the same message as a bad password
+        self.assertEqual(200, resp.status_code)
+        self.assertIn(b'name="next" value="/page/secret"', resp.data)
+        self.assertIn(b'Email address or password is invalid', resp.data)
+
+
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument('--print-log', action='store_true',
