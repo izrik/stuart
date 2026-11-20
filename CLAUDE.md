@@ -24,7 +24,7 @@ python stuart.py --db-uri "sqlite:///wiki.db" --create-db
 # Run tests
 python run_tests.py
 
-# Full lint and test suite (requires both Python and npm deps)
+# Full lint and test suite (requires Python and npm deps, plus hadolint)
 ./run_tests_with_coverage.sh
 
 # The checks CI gates pull requests with, individually
@@ -35,7 +35,7 @@ pip-audit -r requirements.txt -r dev_requirements.txt
 npm ci
 ./node_modules/.bin/markdownlint README.md
 ./node_modules/.bin/csslint static/stuart.css
-./node_modules/.bin/dockerlint Dockerfile
+hadolint Dockerfile
 
 # Docker build and run
 docker build -t stuart . && docker run -p 8080:8080 stuart
@@ -93,13 +93,15 @@ as a separate check, so a failure names itself:
 | Lint shell | `shellcheck run_tests_with_coverage.sh` |
 | Lint Markdown | `./node_modules/.bin/markdownlint README.md` |
 | Lint CSS | `./node_modules/.bin/csslint static/stuart.css` |
-| Lint Dockerfile | `./node_modules/.bin/dockerlint Dockerfile` |
+| Lint Dockerfile | `hadolint Dockerfile` |
 
 These are the same commands [`run_tests_with_coverage.sh`](run_tests_with_coverage.sh)
 chains, so running that script locally covers all of them. To reproduce the
 checks one at a time, install the Python dependencies
-(`pip install -r requirements.txt -r dev_requirements.txt`) and the npm
-linters (`npm ci`), then run the commands in the table above.
+(`pip install -r requirements.txt -r dev_requirements.txt`), the npm
+linters (`npm ci`) and [Hadolint](https://github.com/hadolint/hadolint)
+(`brew install hadolint`, or a release binary), then run the commands in the
+table above.
 
 Both CI and the local script run `pip-audit -r requirements.txt -r dev_requirements.txt`
 to audit declared dependencies and their resolved dependencies, rather than the
