@@ -16,10 +16,13 @@
    You should have received a copy of the GNU Affero General Public License
    along with stuart.  If not, see <http://www.gnu.org/licenses/>.
 #}
+{# page_links_args carries any extra query-string arguments the endpoint
+   needs to repeat, such as the search terms. #}
+{% set page_links_args = page_links_args if page_links_args else {} %}
 <nav class="paginate-container">
 <ul class="pagination">
     <li>
-        <a rel="prev" {% if pager.has_prev %} href="{{ url_for(page_links_endpoint, page=pager.prev_num, per_page=pager.per_page) }}" {% endif %}>
+        <a rel="prev" {% if pager.has_prev %} href="{{ url_for(page_links_endpoint, page=pager.prev_num, per_page=pager.per_page, **page_links_args) }}" {% endif %}>
             <span>
                 <span class="glyphicon glyphicon-chevron-left input-xs"></span>
             </span>
@@ -30,7 +33,7 @@
     <li {%if page == pager.page and pager.pages > 1%} class="active"{%endif%}>
         {% if page %}
             {% if page != pager.page %}
-                <a href="{{ url_for(page_links_endpoint, page=page, per_page=pager.per_page) }}">{{ page }}</a>
+                <a href="{{ url_for(page_links_endpoint, page=page, per_page=pager.per_page, **page_links_args) }}">{{ page }}</a>
             {% else %}
                 <a rel="current">{{ page }}</a>
             {% endif %}
@@ -44,7 +47,7 @@
     </li>
     {% endfor %}
     <li>
-        <a rel="next" {% if pager.has_next %} href="{{ url_for(page_links_endpoint, page=pager.next_num, per_page=pager.per_page) }}" {% endif %}>
+        <a rel="next" {% if pager.has_next %} href="{{ url_for(page_links_endpoint, page=pager.next_num, per_page=pager.per_page, **page_links_args) }}" {% endif %}>
             <span class="glyphicon glyphicon-chevron-right"></span>
         </a>
     </li>

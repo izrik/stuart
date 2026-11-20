@@ -60,4 +60,11 @@ The container exposes port 8080 and runs via `docker_start.sh` using Gunicorn.
 
 ## Database Options
 
-Setting `main_page` via `--set-option main_page "Page Title"` configures which page content displays on the homepage.
+Options are stored in the database and set with `--set-option NAME VALUE`, listed with `--list-options` and removed with `--clear-option NAME`.
+
+| Option | Description |
+|--------|-------------|
+| `main_page` | The title (or slug) of the page whose content is shown on the homepage. |
+| `search_synonyms` | Words that search should treat as equivalent. Groups are separated by semicolons, the words within a group by commas: `--set-option search_synonyms "cat, feline; dog, canine, hound"`. A search for any word in a group also finds pages using the others, scored slightly below a direct match. Values are limited to 100 characters. |
+
+Search needs no configuration otherwise: it matches on titles, content, notes and tag names, weighted in that order, and tolerates different inflections, prefixes and small misspellings.

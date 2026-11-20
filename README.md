@@ -25,6 +25,7 @@ are printed to the console on first run.
 ## Features
 
 - Markdown/GFM content with live preview
+- Fuzzy full-text search over titles, content, notes and tags
 - User authentication
 - Page tagging
 - Private pages
