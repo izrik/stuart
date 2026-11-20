@@ -1,12 +1,5 @@
 FROM python:3.11.17-alpine3.24
 
-ENV STUART_VERSION=0.7
-LABEL \
-    Name="stuart" \
-    Version="$STUART_VERSION" \
-    Summary="A Python wiki system." \
-    Description="A Python wiki system." \
-    maintaner="izrik <izrik@izrik.com>"
 
 RUN mkdir -p /opt/stuart
 
@@ -35,5 +28,22 @@ COPY templates templates
 EXPOSE 8080
 ENV STUART_PORT=8080 \
     STUART_HOST=0.0.0.0
+
+# Record what was built. `build_docker.sh` passes both as --build-arg; they
+# come last so a new version does not invalidate the layers above. The
+# STUART_* variables let the running app report its own version, and the
+# labels let anything inspecting the image read it without starting it.
+ARG VERSION
+ARG REVISION
+ENV STUART_VERSION=$VERSION \
+    STUART_REVISION=$REVISION
+LABEL org.opencontainers.image.version=$VERSION \
+      org.opencontainers.image.revision=$REVISION
+LABEL \
+    Name="stuart" \
+    Version="$STUART_VERSION" \
+    Summary="A Python wiki system." \
+    Description="A Python wiki system." \
+    maintaner="izrik <izrik@izrik.com>"
 
 CMD ["/opt/stuart/docker_start.sh"]
