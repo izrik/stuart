@@ -11,8 +11,8 @@ COPY requirements.txt \
 RUN apk add git bash libpq
 RUN pip install --upgrade pip setuptools wheel
 RUN apk add --virtual .build-deps gcc musl-dev libffi-dev postgresql-dev g++ && \
-    pip install gunicorn==20.1.0 \
-                psycopg2==2.9.10 \
+    pip install gunicorn==27.0.1 \
+                psycopg2==2.9.13 \
                 -r requirements.txt && \
     apk --purge del .build-deps
 
