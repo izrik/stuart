@@ -6,7 +6,7 @@ Flask-WTF==1.3.0
 python-slugify==9.1.3
 SQLAlchemy==2.1.6
 GitPython==3.2.1
-pymdown-extensions==12.3
+pymdown-extensions==13.1
 python-dateutil==3.0.0
 
 # Werkzeug is upgraded together with Flask.
