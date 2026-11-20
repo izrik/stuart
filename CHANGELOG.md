@@ -119,6 +119,13 @@ release.
   Python 3.10 and newer, so 2.8.6 would no longer build. Nothing in
   `requirements.txt` had to change for the new interpreter.
 
+- **Hadolint replaces dockerlint** for linting the `Dockerfile`, in CI and in
+  `run_tests_with_coverage.sh`. dockerlint is unmaintained and rejected an
+  `ARG` with no default as undefined. Running the local script now needs
+  `hadolint` on the `PATH` (for example `brew install hadolint`); CI downloads
+  a pinned release and verifies its checksum. The image's `apk` and `pip`
+  steps now skip their caches, which makes the image smaller.
+
 ### Removed
 
 - **The dead `.travis.yml`** ([#43](https://github.com/izrik/stuart/issues/43)).

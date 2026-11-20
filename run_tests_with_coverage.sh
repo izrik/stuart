@@ -7,5 +7,5 @@ coverage run --source=stuart ./run_tests.py "$@" && \
     ./node_modules/.bin/markdownlint README.md && \
     ./node_modules/.bin/csslint static/stuart.css && \
     pip-audit -r requirements.txt -r dev_requirements.txt && \
-    ./node_modules/.bin/dockerlint Dockerfile && \
+    hadolint Dockerfile && \
   echo Success
